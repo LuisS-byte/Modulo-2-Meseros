@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Modulo-2-Meseros.props" />
+</Project>

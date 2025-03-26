@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\Modulo-2-Meseros.props" />
+</Project>

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Modulo-2-Meseros")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a04cd08cae94910c2e9cbbbbfc96253feb105757")]
 [assembly: System.Reflection.AssemblyProductAttribute("Modulo-2-Meseros")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Modulo-2-Meseros")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
