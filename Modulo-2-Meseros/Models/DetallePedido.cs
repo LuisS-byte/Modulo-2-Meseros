@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Modulo_2_Meseros.Models;
 
@@ -22,6 +23,7 @@ public partial class DetallePedido
     public virtual EstadoPedido? IdEstadopedidoNavigation { get; set; }
 
     public virtual MenuItem IdMenuNavigation { get; set; } = null!;
+    [JsonIgnore]
 
     public virtual Pedido IdPedidoNavigation { get; set; } = null!;
 }
