@@ -5,36 +5,52 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container mt-4">
-    <h2 class="text-center mb-4">Menú de Platos</h2>
-
-    <div class="alert alert-info">
-        <p>Diagnóstico:</p>
-        <p>Model is null: @(Model == null)</p>
-        @if (Model != null)
-        {
-            <p>Model count: @Model.Count()</p>
-        }
-    </div>
+<div class="container-fluid mt-3">
+    <h2 class="text-center mb-4 fw-bold">MENÚ DE PLATOS</h2>
+    
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+    {
+        <div class="alert alert-danger">
+            Error: @ViewBag.ErrorMessage
+        </div>
+    }
 
     @if (Model == null || !Model.Any())
     {
-        <div class="alert alert-warning">
-            No se encontraron platos para mostrar.
+        <div class="alert alert-warning text-center">
+            <i class="bi bi-exclamation-triangle me-2"></i> No se encontraron platos disponibles.
         </div>
     }
     else
     {
-        <div class="row">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             @foreach (var item in Model)
             {
-                <div class="col-md-4 mb-4">
-                    <div class="card">
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0 rounded-3 position-relative">
+                        @if (!string.IsNullOrEmpty(item.ImagenURL))
+                        {
+                            <img src="@item.ImagenURL" class="card-img-top" alt="@item.NombrePlato" style="height: 180px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <img src="https://res.cloudinary.com/hero-global/image/upload/ar_1440:513,c_fill,f_auto,fl_lossy,q_auto,w_1920/v1/Hero%20ES%20Baby/2022-02/shutterstock_1682640625%20(1)" class="card-img-top" alt="Imagen por defecto" style="height: 180px; object-fit: cover;">
+                        }
                         <div class="card-body">
-                            <h5 class="card-title">@item.NombrePlato</h5>
-                            <p>Precio: $@item.Precio</p>
-                            <p>ID: @item.PlatoId</p>
-                            <p>Categoría: @item.NombreCategoria</p>
+                            <h5 class="card-title fw-bold">@item.NombrePlato</h5>
+                            <p class="card-text small text-muted mb-2">@item.NombreCategoria</p>
+                            <p class="card-text mb-3" style="height: 50px; overflow: hidden; text-overflow: ellipsis;">
+                                @(item.Descripcion ?? "Sin descripción disponible")
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mt-auto">
+                                <span class="fs-5 fw-bold text-primary">$@item.Precio.ToString("0.00")</span>
+                                <button class="btn btn-primary rounded-pill px-4" 
+                                        data-plato-id="@item.PlatoId" 
+                                        data-plato-nombre="@item.NombrePlato" 
+                                        data-plato-precio="@item.Precio">
+                                    Añadir
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -42,3 +58,32 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Para futuras funcionalidades: añadir al pedido, mostrar detalles, etc.
+            $('.card').hover(
+                function() { $(this).addClass('shadow'); },
+                function() { $(this).removeClass('shadow'); }
+            );
+
+            // Manejar clic en botón añadir (para futura implementación)
+            $('.btn-primary').click(function() {
+                var platoId = $(this).data('plato-id');
+                var platoNombre = $(this).data('plato-nombre');
+                var platoPrecio = $(this).data('plato-precio');
+                
+                // Aquí se implementaría la lógica para añadir al pedido
+                console.log("Añadiendo: " + platoNombre + " ($" + platoPrecio + ")");
+                
+                // Feedback visual al usuario
+                $(this).html('<i class="bi bi-check"></i> Añadido');
+                var btn = $(this);
+                setTimeout(function() {
+                    btn.html('Añadir');
+                }, 1500);
+            });
+        });
+    </script>
+}
