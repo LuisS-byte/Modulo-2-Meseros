@@ -130,6 +130,10 @@ namespace Modulo_2_Meseros.Controllers
                 };
 
                 _context.DetallePedidos.Add(detallePedido);
+
+                var Mesa = await _context.Mesas.FirstOrDefaultAsync(x => x.MesaId == request.Pedido.IdMesa);
+                Mesa.Estado = true;
+
                 await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
