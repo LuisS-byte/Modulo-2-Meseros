@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\cryde\\Desktop\\Restaurante\\Modulo-2-Meseros\\Modulo-2-Meseros\\Modulo-2-Meseros.csproj": {}
+    "C:\\ParcticasDesarrolloWeb\\Modulo-2-Meseros\\Modulo-2-Meseros\\Modulo-2-Meseros.csproj": {}
   },
   "projects": {
-    "C:\\Users\\cryde\\Desktop\\Restaurante\\Modulo-2-Meseros\\Modulo-2-Meseros\\Modulo-2-Meseros.csproj": {
+    "C:\\ParcticasDesarrolloWeb\\Modulo-2-Meseros\\Modulo-2-Meseros\\Modulo-2-Meseros.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\cryde\\Desktop\\Restaurante\\Modulo-2-Meseros\\Modulo-2-Meseros\\Modulo-2-Meseros.csproj",
+        "projectUniqueName": "C:\\ParcticasDesarrolloWeb\\Modulo-2-Meseros\\Modulo-2-Meseros\\Modulo-2-Meseros.csproj",
         "projectName": "Modulo-2-Meseros",
-        "projectPath": "C:\\Users\\cryde\\Desktop\\Restaurante\\Modulo-2-Meseros\\Modulo-2-Meseros\\Modulo-2-Meseros.csproj",
-        "packagesPath": "C:\\Users\\cryde\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\cryde\\Desktop\\Restaurante\\Modulo-2-Meseros\\Modulo-2-Meseros\\obj\\",
+        "projectPath": "C:\\ParcticasDesarrolloWeb\\Modulo-2-Meseros\\Modulo-2-Meseros\\Modulo-2-Meseros.csproj",
+        "packagesPath": "C:\\Users\\nello\\.nuget\\packages\\",
+        "outputPath": "C:\\ParcticasDesarrolloWeb\\Modulo-2-Meseros\\Modulo-2-Meseros\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\cryde\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\nello\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -44,7 +44,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net8.0": {
@@ -88,7 +88,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
