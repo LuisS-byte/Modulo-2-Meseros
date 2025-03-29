@@ -32,7 +32,7 @@ namespace Modulo_2_Meseros.Controllers
             return View(mesas);
         }
 
-       // [Authorize(Roles = "Mesero")]
+        // [Authorize(Roles = "Mesero")]
         [HttpPost]
         public async Task<IActionResult> CambiarEstadoMesa(int id)
         {
@@ -50,8 +50,9 @@ namespace Modulo_2_Meseros.Controllers
         {
             try
             {
-                // Consulta simplificada, sin joins
+                // Consulta con join para obtener el nombre de la categoría
                 var platos = await _context.Platos
+                    .Include(p => p.Categoria)
                     .Select(p => new
                     {
                         PlatoId = p.PlatoId,
@@ -59,7 +60,7 @@ namespace Modulo_2_Meseros.Controllers
                         Precio = p.Precio,
                         Descripcion = p.Descripcion,
                         ImagenURL = p.ImagenUrl,
-                        NombreCategoria = "Categoría"  // Valor estático por ahora
+                        NombreCategoria = p.Categoria != null ? p.Categoria.Nombre : "Sin categoría"
                     })
                     .ToListAsync();
 
@@ -108,7 +109,7 @@ namespace Modulo_2_Meseros.Controllers
             return View();
         }
 
-       // [Authorize(Roles = "Mesero")]
+        // [Authorize(Roles = "Mesero")]
         [HttpPost]
         public async Task<IActionResult> AgregarPedido([FromForm] PedidoCreacion request)
         {
