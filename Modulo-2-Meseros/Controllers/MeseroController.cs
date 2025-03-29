@@ -8,7 +8,7 @@ using Modulo_2_Meseros.Models;
 
 namespace Modulo_2_Meseros.Controllers
 {
-    [Authorize(Roles = "Mesero")]
+    //[Authorize(Roles = "Mesero")]
     public class MeseroController : Controller
     {
         private readonly AppDbContext _context;
@@ -18,21 +18,21 @@ namespace Modulo_2_Meseros.Controllers
             _context = context;
         }
 
-        [Authorize(Roles = "Mesero")]
+        //[Authorize(Roles = "Mesero")]
         public async Task<IActionResult> Index()
         {
             var mesas = await _context.Mesas.ToListAsync();
             return View(mesas);
         }
 
-        [Authorize(Roles = "Mesero")]
+        //[Authorize(Roles = "Mesero")]
         public async Task<IActionResult> EstadoMesas()
         {
             var mesas = await _context.Mesas.ToListAsync();
             return View(mesas);
         }
 
-        [Authorize(Roles = "Mesero")]
+       // [Authorize(Roles = "Mesero")]
         [HttpPost]
         public async Task<IActionResult> CambiarEstadoMesa(int id)
         {
@@ -45,7 +45,7 @@ namespace Modulo_2_Meseros.Controllers
             return RedirectToAction("EstadoMesas");
         }
 
-        [Authorize(Roles = "Mesero")]
+        //[Authorize(Roles = "Mesero")]
         public async Task<IActionResult> VisualizarMenuOnlyPlatos()
         {
             var platos = await (from p in _context.Platos
@@ -65,7 +65,7 @@ namespace Modulo_2_Meseros.Controllers
             return View(platos);
         }
 
-        [Authorize(Roles = "Mesero")]
+        //[Authorize(Roles = "Mesero")]
         public async Task<IActionResult> VisualizarMenuOnlyCombos()
         {
             var combos = await (from p in _context.Combos
@@ -83,7 +83,7 @@ namespace Modulo_2_Meseros.Controllers
             return View(combos);
         }
 
-        [Authorize(Roles = "Mesero")]
+        //[Authorize(Roles = "Mesero")]
         public async Task<IActionResult> VisualizarMenuOnlyPromociones()
         {
             var promociones = await (from p in _context.Promociones
@@ -94,13 +94,13 @@ namespace Modulo_2_Meseros.Controllers
             return View(promociones);
         }
 
-        [Authorize(Roles = "Mesero")]
+        //[Authorize(Roles = "Mesero")]
         public IActionResult CrearPedido()
         {
             return View();
         }
 
-        [Authorize(Roles = "Mesero")]
+       // [Authorize(Roles = "Mesero")]
         [HttpPost]
         public async Task<IActionResult> AgregarPedido([FromForm] PedidoCreacion request)
         {
@@ -148,7 +148,7 @@ namespace Modulo_2_Meseros.Controllers
             }
         }
 
-        [Authorize(Roles = "Mesero")]
+        //[Authorize(Roles = "Mesero")]
         public async Task<IActionResult> VerDetallePedido(int idMesa)
         {
             var detallePedido = await (from D in _context.DetallePedidos
@@ -159,7 +159,7 @@ namespace Modulo_2_Meseros.Controllers
             return View(detallePedido);
         }
 
-        [Authorize(Roles = "Mesero")]
+        //[Authorize(Roles = "Mesero")]
         [HttpPost]
         public async Task<IActionResult> AgregarDetallePedido(int idMesa, DetallePedido detallePedido)
         {
@@ -169,7 +169,7 @@ namespace Modulo_2_Meseros.Controllers
             return RedirectToAction("VerDetallePedido", new { idMesa });
         }
 
-        [Authorize(Roles = "Mesero")]   
+        //[Authorize(Roles = "Mesero")]   
         [HttpPost]
         public async Task<IActionResult> CambiarEstadoDetallePedido(int idDetallePedido, int IdEstadoDetallePedido)
         {
