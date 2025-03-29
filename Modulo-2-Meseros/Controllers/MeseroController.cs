@@ -48,21 +48,29 @@ namespace Modulo_2_Meseros.Controllers
         //[Authorize(Roles = "Mesero")]
         public async Task<IActionResult> VisualizarMenuOnlyPlatos()
         {
-            var platos = await (from p in _context.Platos
-                                join M in _context.MenuItems on p.PlatoId equals M.PlatoId
-                                join c in _context.Categorias on p.CategoriaId equals c.CategoriaId
-                                where M.PlatoId != null
-                                select new
-                                {
-                                    PlatoId = M.PlatoId,
-                                    NombrePlato = p.Nombre,
-                                    Precio = p.Precio,
-                                    Descripcion = p.Descripcion,
-                                    ImagenURL = p.ImagenUrl,
-                                    NombreCategoria = c.Nombre
-                                }).ToListAsync();
+            try
+            {
+                // Consulta simplificada, sin joins
+                var platos = await _context.Platos
+                    .Select(p => new
+                    {
+                        PlatoId = p.PlatoId,
+                        NombrePlato = p.Nombre,
+                        Precio = p.Precio,
+                        Descripcion = p.Descripcion,
+                        ImagenURL = p.ImagenUrl,
+                        NombreCategoria = "Categoría"  // Valor estático por ahora
+                    })
+                    .ToListAsync();
 
-            return View(platos);
+                return View(platos);
+            }
+            catch (Exception ex)
+            {
+                // Manejo de errores
+                ViewBag.ErrorMessage = ex.Message;
+                return View(new List<dynamic>());
+            }
         }
 
         //[Authorize(Roles = "Mesero")]

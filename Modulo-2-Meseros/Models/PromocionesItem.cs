@@ -13,7 +13,7 @@ public partial class PromocionesItem
 
     public virtual Combo Combo { get; set; } = null!;
 
-    public virtual Plato Plato { get; set; } = null!;
+    public virtual Platos Platos { get; set; } = null!;
 
     public virtual Promocione Promocion { get; set; } = null!;
 }

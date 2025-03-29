@@ -22,7 +22,7 @@ public partial class DetallePedido
 
     public virtual EstadoPedido? IdEstadopedidoNavigation { get; set; }
 
-    public virtual MenuItem IdMenuNavigation { get; set; } = null!;
+    public virtual MenuItems IdMenuNavigation { get; set; } = null!;
     [JsonIgnore]
 
     public virtual Pedido IdPedidoNavigation { get; set; } = null!;

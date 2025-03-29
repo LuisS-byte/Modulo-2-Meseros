@@ -17,7 +17,7 @@ public partial class Promocione
 
     public DateOnly FechaFin { get; set; }
 
-    public virtual ICollection<MenuItem> MenuItems { get; set; } = new List<MenuItem>();
+    public virtual ICollection<MenuItems> MenuItems { get; set; } = new List<MenuItems>();
 
     public virtual ICollection<PromocionesItem> PromocionesItems { get; set; } = new List<PromocionesItem>();
 }

@@ -7,90 +7,38 @@
 
 <div class="container mt-4">
     <h2 class="text-center mb-4">Menú de Platos</h2>
-    
-    <div class="row">
-        @foreach (var item in Model)
+
+    <div class="alert alert-info">
+        <p>Diagnóstico:</p>
+        <p>Model is null: @(Model == null)</p>
+        @if (Model != null)
         {
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm">
-                    @if (!string.IsNullOrEmpty(item.ImagenURL))
-                    {
-                        <img src="@item.ImagenURL" class="card-img-top" alt="@item.NombrePlato" style="height: 200px; object-fit: cover;">
-                    }
-                    else
-                    {
-                        <img src="/images/default-plato.jpg" class="card-img-top" alt="Imagen por defecto" style="height: 200px; object-fit: cover;">
-                    }
-                    <div class="card-body">
-                        <h5 class="card-title">@item.NombrePlato</h5>
-                        <p class="badge bg-secondary">@item.NombreCategoria</p>
-                        <p class="card-text text-truncate">@item.Descripcion</p>
-                        <p class="card-text fw-bold text-danger">Precio: $@item.Precio.ToString("N2")</p>
-                    </div>
-                    <div class="card-footer bg-transparent border-top-0">
-                        <button type="button" class="btn btn-primary btn-sm" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#modalDetalle" 
-                                data-id="@item.PlatoId"
-                                data-nombre="@item.NombrePlato"
-                                data-precio="@item.Precio"
-                                data-descripcion="@item.Descripcion"
-                                data-categoria="@item.NombreCategoria">
-                            Ver detalles
-                        </button>
-                        <a href="@Url.Action("CrearPedido", "Mesero", new { idPlato = item.PlatoId })" class="btn btn-success btn-sm">
-                            Agregar al pedido
-                        </a>
-                    </div>
-                </div>
-            </div>
+            <p>Model count: @Model.Count()</p>
         }
     </div>
-</div>
 
-<!-- Modal para mostrar detalles del plato -->
-<div class="modal fade" id="modalDetalle" tabindex="-1" aria-labelledby="modalDetalleLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalDetalleLabel">Detalles del Plato</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <h4 id="nombrePlato"></h4>
-                <p><strong>Categoría:</strong> <span id="categoriaPlato"></span></p>
-                <p><strong>Precio:</strong> $<span id="precioPlato"></span></p>
-                <p><strong>Descripción:</strong></p>
-                <p id="descripcionPlato"></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <a id="btnAgregarPedido" href="#" class="btn btn-success">Agregar al pedido</a>
-            </div>
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-warning">
+            No se encontraron platos para mostrar.
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">@item.NombrePlato</h5>
+                            <p>Precio: $@item.Precio</p>
+                            <p>ID: @item.PlatoId</p>
+                            <p>Categoría: @item.NombreCategoria</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
 </div>
-
-@section Scripts {
-    <script>
-        $(document).ready(function() {
-            $('#modalDetalle').on('show.bs.modal', function (event) {
-                var button = $(event.relatedTarget);
-                var id = button.data('id');
-                var nombre = button.data('nombre');
-                var precio = button.data('precio');
-                var descripcion = button.data('descripcion');
-                var categoria = button.data('categoria');
-                
-                var modal = $(this);
-                modal.find('#nombrePlato').text(nombre);
-                modal.find('#precioPlato').text(precio.toFixed(2));
-                modal.find('#descripcionPlato').text(descripcion);
-                modal.find('#categoriaPlato').text(categoria);
-                
-                // Actualizar el enlace del botón para agregar al pedido
-                modal.find('#btnAgregarPedido').attr('href', '@Url.Action("CrearPedido", "Mesero")?idPlato=' + id);
-            });
-        });
-    </script>
-}
