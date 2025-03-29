@@ -3,6 +3,14 @@
   "WorkspaceRootPath": "C:\\Users\\cryde\\Desktop\\Restaurante\\Modulo-2-Meseros\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{08094C9C-45ED-4AF9-92E9-488CFF6B395E}|Modulo-2-Meseros\\Modulo-2-Meseros.csproj|c:\\users\\cryde\\desktop\\restaurante\\modulo-2-meseros\\modulo-2-meseros\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{08094C9C-45ED-4AF9-92E9-488CFF6B395E}|Modulo-2-Meseros\\Modulo-2-Meseros.csproj|solutionrelative:modulo-2-meseros\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{08094C9C-45ED-4AF9-92E9-488CFF6B395E}|Modulo-2-Meseros\\Modulo-2-Meseros.csproj|c:\\users\\cryde\\desktop\\restaurante\\modulo-2-meseros\\modulo-2-meseros\\custom\\utilidades.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{08094C9C-45ED-4AF9-92E9-488CFF6B395E}|Modulo-2-Meseros\\Modulo-2-Meseros.csproj|solutionrelative:modulo-2-meseros\\custom\\utilidades.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{08094C9C-45ED-4AF9-92E9-488CFF6B395E}|Modulo-2-Meseros\\Modulo-2-Meseros.csproj|c:\\users\\cryde\\desktop\\restaurante\\modulo-2-meseros\\modulo-2-meseros\\controllers\\meserocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{08094C9C-45ED-4AF9-92E9-488CFF6B395E}|Modulo-2-Meseros\\Modulo-2-Meseros.csproj|solutionrelative:modulo-2-meseros\\controllers\\meserocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -83,6 +91,32 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\cryde\\Desktop\\Restaurante\\Modulo-2-Meseros\\Modulo-2-Meseros\\Program.cs",
+              "RelativeDocumentMoniker": "Modulo-2-Meseros\\Program.cs",
+              "ToolTip": "C:\\Users\\cryde\\Desktop\\Restaurante\\Modulo-2-Meseros\\Modulo-2-Meseros\\Program.cs",
+              "RelativeToolTip": "Modulo-2-Meseros\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-29T17:08:15.123Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Utilidades.cs",
+              "DocumentMoniker": "C:\\Users\\cryde\\Desktop\\Restaurante\\Modulo-2-Meseros\\Modulo-2-Meseros\\Custom\\Utilidades.cs",
+              "RelativeDocumentMoniker": "Modulo-2-Meseros\\Custom\\Utilidades.cs",
+              "ToolTip": "C:\\Users\\cryde\\Desktop\\Restaurante\\Modulo-2-Meseros\\Modulo-2-Meseros\\Custom\\Utilidades.cs",
+              "RelativeToolTip": "Modulo-2-Meseros\\Custom\\Utilidades.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-29T17:00:03.228Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "MeseroController.cs",
               "DocumentMoniker": "C:\\Users\\cryde\\Desktop\\Restaurante\\Modulo-2-Meseros\\Modulo-2-Meseros\\Controllers\\MeseroController.cs",
               "RelativeDocumentMoniker": "Modulo-2-Meseros\\Controllers\\MeseroController.cs",
@@ -95,7 +129,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "AccesoController.cs",
               "DocumentMoniker": "C:\\Users\\cryde\\Desktop\\Restaurante\\Modulo-2-Meseros\\Modulo-2-Meseros\\Controllers\\AccesoController.cs",
               "RelativeDocumentMoniker": "Modulo-2-Meseros\\Controllers\\AccesoController.cs",

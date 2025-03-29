@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Modulo_2_Meseros.Context;
 using System.Text;
+using Modulo_2_Meseros.Custom;
 
 var builder = WebApplication.CreateBuilder(args);
 
