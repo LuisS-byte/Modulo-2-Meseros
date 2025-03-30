@@ -11,6 +11,10 @@ public partial class Menu
 
     public string? Descripcion { get; set; }
 
+    public DateTime FechaInicio { get; set; }
+
+    public DateTime FechaFin { get; set; }
+
     public DateTime? FechaCreacion { get; set; }
 
     public virtual ICollection<MenuItem> MenuItems { get; set; } = new List<MenuItem>();
