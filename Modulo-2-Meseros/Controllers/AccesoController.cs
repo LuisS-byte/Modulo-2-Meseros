@@ -18,14 +18,22 @@ namespace Modulo_2_Meseros.Controllers
             _utilidades = utilidades;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string token)
         {
+            ViewData["Token"] = token;
+
             return View();
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginDTO objeto)
         {
+            if (!ModelState.IsValid)
+            {
+                return View("Index", objeto);
+            }
+
             var usuario = await _dbContext.Empleados
                 .Include(u => u.Rol)
                 .FirstOrDefaultAsync(u =>
@@ -34,21 +42,16 @@ namespace Modulo_2_Meseros.Controllers
 
             if (usuario == null)
             {
-                ViewBag.Error = "Correo o contraseña incorrectos.";
-                return View("Index"); 
+                ModelState.AddModelError(string.Empty, "Correo o contraseña incorrectos.");
+                return View("Index", objeto);
             }
 
-            HttpContext.Session.SetString("Usuario", usuario.Email);
-            HttpContext.Session.SetString("Rol", usuario.Rol?.Nombre ?? "");
+            var token = _utilidades.GenerarToken(usuario);
 
-            //cambiar cuando la vista este creada
-            return RedirectToAction("Index", "Home");
+            // Pasar el token como parámetro de consulta
+            return RedirectToAction("Index", "Acceso", new { token });
         }
 
-        public IActionResult Logout()
-        {
-            HttpContext.Session.Clear(); 
-            return RedirectToAction("Index");
-        }
+
     }
 }
