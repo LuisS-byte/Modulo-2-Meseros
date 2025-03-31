@@ -10,9 +10,9 @@
 <div class="container-menu">
     <div class="menu-header">
         <h2 class="menu-title">MENÚ DE PLATOS</h2>
-        <button class="filter-button">Categorías <i class="arrow-down"></i></button>
+        @* <button class="filter-button">Categorías <i class="arrow-down"></i></button> *@
     </div>
-    
+
     @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
     {
         <div class="alert-message alert-danger">
@@ -28,63 +28,188 @@
     }
     else
     {
-        <div class="platos-grid">
-            @foreach (var item in Model)
-            {
-                <div class="plato-card">
-                    <div class="plato-img-container">
-                        @if (!string.IsNullOrEmpty(item.ImagenURL))
-                        {
-                            <img src="@item.ImagenURL" class="plato-img" alt="@item.NombrePlato">
-                        }
-                        else
-                        {
-                            <img src="https://res.cloudinary.com/hero-global/image/upload/ar_1440:513,c_fill,f_auto,fl_lossy,q_auto,w_1920/v1/Hero%20ES%20Baby/2022-02/shutterstock_1682640625%20(1)" class="plato-img" alt="Imagen por defecto">
-                        }
-                    </div>
-                    <div class="plato-content">
-                        <h3 class="plato-title">@item.NombrePlato</h3>
-                        <p class="plato-category">@item.NombreCategoria</p>
-                        <p class="plato-price">$@item.Precio.ToString("0.00")</p>
-                        <p class="plato-description">
-                            @(item.Descripcion ?? "Sin descripción disponible")
-                        </p>
-                        <button class="btn-add" 
-                                data-plato-id="@item.PlatoId" 
-                                data-plato-nombre="@item.NombrePlato" 
-                                data-plato-precio="@item.Precio">
-                            Añadir
-                        </button>
-                    </div>
-                </div>
-            }
+        <div class="platos-grid" id="platos-container">
+            <!-- Las tarjetas se cargarán dinámicamente aquí -->
+        </div>
+
+        <div id="loading-spinner" class="loading-spinner">
+            <div class="spinner"></div>
         </div>
     }
 </div>
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
-            // Animar entrada de cards
-            $('.plato-card').each(function(index) {
-                $(this).css('animation-delay', (index * 0.1) + 's');
+        $(document).ready(function () {
+            // Almacenar todos los datos de platos
+            var todosLosPlatos = [];
+
+            @foreach (var item in Model)
+            {
+                <text>
+                    todosLosPlatos.push({
+                        platoId: '@item.PlatoId',
+                        nombre: '@Html.Raw(item.NombrePlato?.Replace("'", "\\'"))',
+                        categoria: '@Html.Raw(item.NombreCategoria?.Replace("'", "\\'"))',
+                        precio: '@item.Precio',
+                        descripcion: '@Html.Raw(item.Descripcion?.Replace("'", "\\'") ?? "Sin descripción disponible")',
+                        imagenURL: '@Html.Raw(item.ImagenURL?.Replace("'", "\\'"))'
+                    });
+                </text>
+            }
+
+            // Configuración de paginación
+            var elementosPorPagina = 6;
+            var paginaActual = 0;
+            var cargando = false;
+            var todosLosPlatosCargados = false;
+
+            // Función para renderizar platos
+            function renderizarPlatos(inicio, fin) {
+                var platosHTML = '';
+
+                for (var i = inicio; i < fin && i < todosLosPlatos.length; i++) {
+                    var plato = todosLosPlatos[i];
+                    var imagenSrc = plato.imagenURL ? plato.imagenURL : 'https://res.cloudinary.com/hero-global/image/upload/ar_1440:513,c_fill,f_auto,fl_lossy,q_auto,w_1920/v1/Hero%20ES%20Baby/2022-02/shutterstock_1682640625%20(1)';
+
+                    platosHTML += `
+                        <div class="plato-card">
+                            <div class="plato-img-container">
+                                <img src="${imagenSrc}" class="plato-img" alt="${plato.nombre}">
+                            </div>
+                            <div class="plato-content">
+                                <h3 class="plato-title">${plato.nombre}</h3>
+                                <p class="plato-category">${plato.categoria}</p>
+                                <p class="plato-price">$${parseFloat(plato.precio).toFixed(2)}</p>
+                                <p class="plato-description">${plato.descripcion}</p>
+                                <button class="btn-add" 
+                                        data-plato-id="${plato.platoId}" 
+                                        data-plato-nombre="${plato.nombre}" 
+                                        data-plato-precio="${plato.precio}">
+                                    Añadir
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return platosHTML;
+            }
+
+            // Cargar platos iniciales
+            function cargarPlatosIniciales() {
+                var cantidadCargar = Math.min(elementosPorPagina, todosLosPlatos.length);
+                var platosHTML = renderizarPlatos(0, cantidadCargar);
+
+                $('#platos-container').html(platosHTML);
+
+                // Animar entrada de cards
+                $('.plato-card').each(function (index) {
+                    $(this).css('animation-delay', (index * 0.1) + 's');
+                });
+
+                paginaActual = 1;
+                
+                // Verificar si ya se cargaron todos los platos
+                if (cantidadCargar >= todosLosPlatos.length) {
+                    todosLosPlatosCargados = true;
+                    $('#loading-spinner').hide();
+                } else {
+                    // Verificar si es necesario cargar más platos inmediatamente
+                    checkScrollPosition();
+                }
+            }
+
+            // Cargar más platos al hacer scroll
+            function cargarMasPlatos() {
+                if (cargando || todosLosPlatosCargados) return;
+
+                cargando = true;
+                $('#loading-spinner').show();
+
+                // Simulamos pequeño retraso para mostrar el spinner
+                setTimeout(function () {
+                    var inicio = paginaActual * elementosPorPagina;
+                    var fin = inicio + elementosPorPagina;
+
+                    if (inicio < todosLosPlatos.length) {
+                        var nuevosPlatos = renderizarPlatos(inicio, fin);
+                        $('#platos-container').append(nuevosPlatos);
+
+                        // Animar entrada de nuevas cards
+                        $('.plato-card').slice(inicio).each(function (index) {
+                            $(this).css('animation-delay', (index * 0.05) + 's');
+                        });
+
+                        paginaActual++;
+                        
+                        // Verificar si ya se cargaron todos los platos
+                        if (fin >= todosLosPlatos.length) {
+                            todosLosPlatosCargados = true;
+                        }
+                    } else {
+                        todosLosPlatosCargados = true;
+                    }
+
+                    cargando = false;
+                    $('#loading-spinner').hide();
+                    
+                    // Verificar nuevamente si es necesario cargar más platos
+                    checkScrollPosition();
+                }, 500);
+            }
+
+            // Función mejorada para verificar la posición del scroll
+            function checkScrollPosition() {
+                // Altura del documento entero
+                var docHeight = $(document).height();
+                // Altura de la ventana visible
+                var winHeight = $(window).height();
+                // Posición actual del scroll
+                var scrollTop = $(window).scrollTop();
+                
+                // Calcular si estamos cerca del final o si el contenido no llena la página
+                var isNearBottom = scrollTop + winHeight > docHeight - 200;
+                var contentTooShort = docHeight <= winHeight + 100;
+                
+                // Si estamos cerca del final o el contenido es muy corto y hay más platos para cargar
+                if ((isNearBottom || contentTooShort) && !todosLosPlatosCargados && !cargando) {
+                    cargarMasPlatos();
+                }
+            }
+
+            // Detectar scroll usando throttling para mejor rendimiento
+            var scrollTimeout;
+            $(window).scroll(function () {
+                if (scrollTimeout) clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(checkScrollPosition, 100);
             });
             
-            // Manejar clic en botón añadir
-            $('.btn-add').click(function() {
+            // También verificar cuando se redimensiona la ventana
+            $(window).resize(function() {
+                if (!cargando) {
+                    checkScrollPosition();
+                }
+            });
+
+            // Iniciar carga de platos
+            cargarPlatosIniciales();
+
+            // Manejar clic en botón añadir (delegación de eventos)
+            $(document).on('click', '.btn-add', function () {
                 var platoId = $(this).data('plato-id');
                 var platoNombre = $(this).data('plato-nombre');
                 var platoPrecio = $(this).data('plato-precio');
-                
+
                 // Aquí se implementaría la lógica para añadir al pedido
                 console.log("Añadiendo: " + platoNombre + " ($" + platoPrecio + ")");
-                
+
                 // Feedback visual al usuario con animación
                 var btn = $(this);
                 btn.addClass('added');
                 btn.html('Añadido');
-                
-                setTimeout(function() {
+
+                setTimeout(function () {
                     btn.removeClass('added');
                     btn.html('Añadir');
                 }, 1500);

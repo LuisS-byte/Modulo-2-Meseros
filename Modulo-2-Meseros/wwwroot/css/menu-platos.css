@@ -201,7 +201,63 @@ body {
     }
 }
 
+/* Spinner de carga */
+.loading-spinner {
+    display: none;
+    text-align: center;
+    padding: 20px 0;
+    margin: 20px auto;
+    clear: both;
+    position: relative;
+    height: 60px;
+}
+
+.spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: #e53e3e;
+    animation: spin 1s ease-in-out infinite;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 /* Responsive */
+@media (max-width: 1224px) {
+    .platos-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+    
+    .plato-card {
+        padding: 1.5rem;
+    }
+    
+    .plato-img {
+        width: 5rem;
+        height: 5rem;
+    }
+    
+    .container-menu {
+        max-width: 95%;
+        padding: 15px;
+    }
+}
+
+@media (max-width: 992px) {
+    .platos-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 768px) {
     .platos-grid {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
