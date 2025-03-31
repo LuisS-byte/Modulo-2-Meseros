@@ -2,64 +2,59 @@
 
 @{
     ViewData["Title"] = "Menú de Platos";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    @* Layout = "~/Views/Shared/_Layout.cshtml"; *@
 }
 
 <link rel="stylesheet" href="~/css/menu-platos.css" />
 
-<div class="container-fluid mt-4">
-    <h2 class="text-center mb-4 fw-bold menu-title">MENÚ DE PLATOS</h2>
+<div class="container-menu">
+    <div class="menu-header">
+        <h2 class="menu-title">MENÚ DE PLATOS</h2>
+        <button class="filter-button">Categorías <i class="arrow-down"></i></button>
+    </div>
     
     @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
     {
-        <div class="alert alert-danger">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>Error: @ViewBag.ErrorMessage
+        <div class="alert-message alert-danger">
+            <i class="icon-warning"></i>Error: @ViewBag.ErrorMessage
         </div>
     }
 
     @if (Model == null || !Model.Any())
     {
-        <div class="alert alert-warning text-center">
-            <i class="bi bi-exclamation-triangle me-2"></i> No se encontraron platos disponibles.
+        <div class="alert-message alert-warning">
+            <i class="icon-warning"></i> No se encontraron platos disponibles.
         </div>
     }
     else
     {
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <div class="platos-grid">
             @foreach (var item in Model)
             {
-                <div class="col">
-                    <div class="card menu-card h-100 border-0 rounded-4 position-relative overflow-hidden">
-                        <div class="card-img-container">
-                            @if (!string.IsNullOrEmpty(item.ImagenURL))
-                            {
-                                <img src="@item.ImagenURL" class="card-img-top" alt="@item.NombrePlato">
-                            }
-                            else
-                            {
-                                <img src="https://res.cloudinary.com/hero-global/image/upload/ar_1440:513,c_fill,f_auto,fl_lossy,q_auto,w_1920/v1/Hero%20ES%20Baby/2022-02/shutterstock_1682640625%20(1)" class="card-img-top" alt="Imagen por defecto">
-                            }
-                            <div class="category-badge">
-                                @item.NombreCategoria
-                            </div>
-                        </div>
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title fw-bold text-dark">@item.NombrePlato</h5>
-                            <div class="card-description">
-                                <p class="card-text">
-                                    @(item.Descripcion ?? "Sin descripción disponible")
-                                </p>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mt-auto pt-3">
-                                <span class="price-tag">$@item.Precio.ToString("0.00")</span>
-                                <button class="btn btn-add rounded-pill" 
-                                        data-plato-id="@item.PlatoId" 
-                                        data-plato-nombre="@item.NombrePlato" 
-                                        data-plato-precio="@item.Precio">
-                                    <i class="bi bi-plus-circle me-1"></i> Añadir
-                                </button>
-                            </div>
-                        </div>
+                <div class="plato-card">
+                    <div class="plato-img-container">
+                        @if (!string.IsNullOrEmpty(item.ImagenURL))
+                        {
+                            <img src="@item.ImagenURL" class="plato-img" alt="@item.NombrePlato">
+                        }
+                        else
+                        {
+                            <img src="https://res.cloudinary.com/hero-global/image/upload/ar_1440:513,c_fill,f_auto,fl_lossy,q_auto,w_1920/v1/Hero%20ES%20Baby/2022-02/shutterstock_1682640625%20(1)" class="plato-img" alt="Imagen por defecto">
+                        }
+                    </div>
+                    <div class="plato-content">
+                        <h3 class="plato-title">@item.NombrePlato</h3>
+                        <p class="plato-category">@item.NombreCategoria</p>
+                        <p class="plato-price">$@item.Precio.ToString("0.00")</p>
+                        <p class="plato-description">
+                            @(item.Descripcion ?? "Sin descripción disponible")
+                        </p>
+                        <button class="btn-add" 
+                                data-plato-id="@item.PlatoId" 
+                                data-plato-nombre="@item.NombrePlato" 
+                                data-plato-precio="@item.Precio">
+                            Añadir
+                        </button>
                     </div>
                 </div>
             }
@@ -71,7 +66,7 @@
     <script>
         $(document).ready(function() {
             // Animar entrada de cards
-            $('.menu-card').each(function(index) {
+            $('.plato-card').each(function(index) {
                 $(this).css('animation-delay', (index * 0.1) + 's');
             });
             
@@ -87,11 +82,11 @@
                 // Feedback visual al usuario con animación
                 var btn = $(this);
                 btn.addClass('added');
-                btn.html('<i class="bi bi-check-circle me-1"></i> Añadido');
+                btn.html('Añadido');
                 
                 setTimeout(function() {
                     btn.removeClass('added');
-                    btn.html('<i class="bi bi-plus-circle me-1"></i> Añadir');
+                    btn.html('Añadir');
                 }, 1500);
             });
         });

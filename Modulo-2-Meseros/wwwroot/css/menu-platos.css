@@ -1,132 +1,196 @@
-/* Estilos para el menú de platos */
+/* Estilos base */
+body {
+    background-color: #1a202c;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Contenedor principal del menú */
+.container-menu {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Encabezado del menú */
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
 
 .menu-title {
-    color: #333;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.filter-button {
+    background-color: #2d3748;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.arrow-down {
+    display: inline-block;
+    margin-left: 8px;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid white;
+}
+
+/* Mensajes de alerta */
+.alert-message {
+    padding: 12px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.alert-danger {
+    background-color: rgba(229, 62, 62, 0.2);
+    color: #e53e3e;
+}
+
+.alert-warning {
+    background-color: rgba(236, 201, 75, 0.2);
+    color: #ecc94b;
+    text-align: center;
+    justify-content: center;
+}
+
+.icon-warning {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
     position: relative;
-    padding-bottom: 15px;
 }
 
-.menu-title:after {
-    content: '';
+.icon-warning:before {
+    content: "!";
+    font-weight: bold;
     position: absolute;
-    bottom: 0;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 3px;
-    background-color: #0d6efd;
+    transform: translate(-50%, -50%);
 }
 
-/* Estilos para las cards */
-.menu-card {
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    animation: fadeInUp 0.5s ease forwards;
+/* Grid para los platos */
+.platos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+/* Tarjeta de plato */
+.plato-card {
+    background-color: #2d3748;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    animation: fadeIn 0.5s ease forwards;
     opacity: 0;
-    transform: translateY(20px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.menu-card:hover {
+.plato-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
 }
 
 /* Contenedor de imagen */
-.card-img-container {
+.plato-img-container {
     position: relative;
-    overflow: hidden;
+    margin-top: -3rem;
+    margin-bottom: 1rem;
 }
 
-.card-img-top {
-    height: 200px;
+.plato-img {
+    width: 6rem;
+    height: 6rem;
     object-fit: cover;
-    transition: transform 0.5s ease;
+    border-radius: 50%;
+    margin: 0 auto;
+    border: 3px solid #2d3748;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: #fff;
 }
 
-.menu-card:hover .card-img-top {
-    transform: scale(1.05);
+/* Contenido del plato */
+.plato-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-/* Badge de categoría */
-.category-badge {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background-color: rgba(255, 255, 255, 0.9);
-    color: #333;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    z-index: 1;
-}
-
-/* Descripción */
-.card-description {
-    height: 70px;
-    overflow: hidden;
-    position: relative;
-}
-
-.card-description p {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 0;
-}
-
-.card-description:after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 20px;
-    background: linear-gradient(transparent, white);
-}
-
-/* Etiqueta de precio */
-.price-tag {
-    font-size: 1.3rem;
+.plato-title {
+    font-size: 1.2rem;
     font-weight: bold;
-    color: #0d6efd;
-    position: relative;
+    margin: 0.5rem 0;
+    color: #ffffff;
 }
 
-.price-tag:before {
-    content: '';
-    position: absolute;
-    bottom: -3px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-color: #0d6efd;
-    opacity: 0.3;
+.plato-category {
+    font-size: 0.8rem;
+    color: #a0aec0;
+    margin: 0 0 0.5rem;
+}
+
+.plato-price {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #a0aec0;
+    margin: 0 0 1rem;
+}
+
+.plato-description {
+    font-size: 0.9rem;
+    color: #cbd5e0;
+    margin-bottom: 1.5rem;
+    height: 40px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 /* Botón añadir */
 .btn-add {
-    background-color: #0d6efd;
+    background-color: #e53e3e;
     color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 20px;
     font-weight: 500;
-    padding: 7px 18px;
-    transition: all 0.3s ease;
-    border: 2px solid #0d6efd;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
 }
 
 .btn-add:hover {
-    background-color: #0b5ed7;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.25);
+    background-color: #c53030;
 }
 
 .btn-add.added {
-    background-color: #198754;
-    border-color: #198754;
+    background-color: #38a169;
 }
 
 /* Animaciones */
-@keyframes fadeInUp {
+@keyframes fadeIn {
     from {
         opacity: 0;
         transform: translateY(20px);
@@ -134,5 +198,24 @@
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .platos-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .platos-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .menu-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
     }
 }
