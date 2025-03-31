@@ -6,7 +6,7 @@
 
         public int? IdMesa { get; set; }
 
-        public int? IdMesero { get; set; }
+        public int? EmpleadoID { get; set; }
 
         public int? IdEstadopedido { get; set; }
     }
