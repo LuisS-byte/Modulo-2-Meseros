@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Modulo_2_Meseros.Models;
 
-public partial class MenuItem
+public partial class MenuItems
 {
     public int MenuItemId { get; set; }
 
@@ -21,7 +21,7 @@ public partial class MenuItem
 
     public virtual Menu? Menu { get; set; }
 
-    public virtual Plato? Plato { get; set; }
+    public virtual Platos? Platos { get; set; }
 
     public virtual Promocione? Promocion { get; set; }
 }

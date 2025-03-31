@@ -34,30 +34,46 @@ namespace Modulo_2_Meseros.Controllers
             return View(mesas);
         }
 
-       
+        // [Authorize(Roles = "Mesero")]
+        [HttpPost]
+        public async Task<IActionResult> CambiarEstadoMesa(int id)
+        {
+            var mesa = await _context.Mesas.FirstOrDefaultAsync(x => x.MesaId == id);
+            if (mesa == null) return NotFound();
+
+            mesa.Estado = !mesa.Estado;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("EstadoMesas");
+        }
 
         //[Authorize(Roles = "Mesero")]
         public async Task<IActionResult> VisualizarMenuOnlyPlatos()
         {
-            var today = DateTime.Today;
-            var platos = await (from p in _context.Platos
-                                join MI in _context.MenuItems on p.PlatoId equals MI.PlatoId
-                                join c in _context.Categorias on p.CategoriaId equals c.CategoriaId
-                                join M in _context.Menus on MI.MenuId equals M.MenuId
-                                where MI.PlatoId != null
-                                && M.FechaInicio.Date <= today
-                                && M.FechaFin.Date >= today
-                                select new
-                                {
-                                    PlatoId = MI.PlatoId,
-                                    NombrePlato = p.Nombre,
-                                    Precio = p.Precio,
-                                    Descripcion = p.Descripcion,
-                                    ImagenURL = p.ImagenUrl,
-                                    NombreCategoria = c.Nombre
-                                }).ToListAsync();
+            try
+            {
+                // Consulta con join para obtener el nombre de la categoría
+                var platos = await _context.Platos
+                    .Include(p => p.Categoria)
+                    .Select(p => new
+                    {
+                        PlatoId = p.PlatoId,
+                        NombrePlato = p.Nombre,
+                        Precio = p.Precio,
+                        Descripcion = p.Descripcion,
+                        ImagenURL = p.ImagenUrl,
+                        NombreCategoria = p.Categoria != null ? p.Categoria.Nombre : "Sin categoría"
+                    })
+                    .ToListAsync();
 
-            return View(platos);
+                return View(platos);
+            }
+            catch (Exception ex)
+            {
+                // Manejo de errores
+                ViewBag.ErrorMessage = ex.Message;
+                return View(new List<dynamic>());
+            }
         }
 
         //[Authorize(Roles = "Mesero")]
@@ -143,7 +159,7 @@ namespace Modulo_2_Meseros.Controllers
             return View();
         }
 
-       // [Authorize(Roles = "Mesero")]
+        // [Authorize(Roles = "Mesero")]
         [HttpPost]
         public async Task<IActionResult> AgregarPedido([FromForm] PedidoCreacion request)
         {

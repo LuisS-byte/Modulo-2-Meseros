@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Modulo_2_Meseros.Models;
 
-public partial class Plato
+public partial class Platos
 {
     public int PlatoId { get; set; }
 
@@ -19,9 +19,9 @@ public partial class Plato
 
     public int? CategoriaId { get; set; }
 
-    public virtual Categoria? Categoria { get; set; }
+    public virtual Categorias? Categoria { get; set; }
 
-    public virtual ICollection<MenuItem> MenuItems { get; set; } = new List<MenuItem>();
+    public virtual ICollection<MenuItems> MenuItems { get; set; } = new List<MenuItems>();
 
     public virtual ICollection<PromocionesItem> PromocionesItems { get; set; } = new List<PromocionesItem>();
 
