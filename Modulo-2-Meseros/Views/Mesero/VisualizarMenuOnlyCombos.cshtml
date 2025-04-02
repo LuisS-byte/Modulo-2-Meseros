@@ -1,0 +1,217 @@
+@model IEnumerable<dynamic>
+
+@{
+    ViewData["Title"] = "Menú de Combos";
+    @* Layout = "~/Views/Shared/_Layout.cshtml"; *@
+}
+
+<link rel="stylesheet" href="~/css/menu-combos.css" />
+
+<div class="container-menu">
+    <div class="menu-header">
+        <h2 class="menu-title">MENÚ DE COMBOS</h2>
+        @* <button class="filter-button">Categorías <i class="arrow-down"></i></button> *@
+    </div>
+
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+    {
+        <div class="alert-message alert-danger">
+            <i class="icon-warning"></i>Error: @ViewBag.ErrorMessage
+        </div>
+    }
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert-message alert-warning">
+            <i class="icon-warning"></i> No se encontraron combos disponibles.
+        </div>
+    }
+    else
+    {
+        <div class="combos-grid" id="combos-container">
+            <!-- Las tarjetas se cargarán dinámicamente aquí -->
+        </div>
+
+        <div id="loading-spinner" class="loading-spinner">
+            <div class="spinner"></div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Almacenar todos los datos de combos
+            var todosLosCombos = [];
+
+            @foreach (var item in Model)
+            {
+                <text>
+                    todosLosCombos.push({
+                        comboId: '@item.ComboId',
+                        nombre: '@Html.Raw(item.NombreCombo?.Replace("'", "\\'"))',
+                        precio: '@item.Precio',
+                        descripcion: '@Html.Raw(item.Descripcion?.Replace("'", "\\'") ?? "Sin descripción disponible")',
+                        imagenURL: '@Html.Raw(item.ImagenURL?.Replace("'", "\\'"))'
+                    });
+                </text>
+            }
+
+            // Configuración de paginación
+            var elementosPorPagina = 6;
+            var paginaActual = 0;
+            var cargando = false;
+            var todosLosCombosCargados = false;
+
+            // Función para renderizar combos
+            function renderizarCombos(inicio, fin) {
+                var combosHTML = '';
+
+                for (var i = inicio; i < fin && i < todosLosCombos.length; i++) {
+                    var combo = todosLosCombos[i];
+                    var imagenSrc = combo.imagenURL ? combo.imagenURL : 'https://res.cloudinary.com/hero-global/image/upload/ar_1440:513,c_fill,f_auto,fl_lossy,q_auto,w_1920/v1/Hero%20ES%20Baby/2022-02/shutterstock_1682640625%20(1)';
+
+                    combosHTML += `
+                        <div class="combo-card">
+                            <div class="combo-img-container">
+                                <img src="${imagenSrc}" class="combo-img" alt="${combo.nombre}">
+                            </div>
+                            <div class="combo-content">
+                                <h3 class="combo-title">${combo.nombre}</h3>
+                                <p class="combo-price">$${parseFloat(combo.precio).toFixed(2)}</p>
+                                <p class="combo-description">${combo.descripcion}</p>
+                                <button class="btn-add" 
+                                        data-combo-id="${combo.comboId}" 
+                                        data-combo-nombre="${combo.nombre}" 
+                                        data-combo-precio="${combo.precio}">
+                                    Añadir
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return combosHTML;
+            }
+
+            // Cargar combos iniciales
+            function cargarCombosIniciales() {
+                var cantidadCargar = Math.min(elementosPorPagina, todosLosCombos.length);
+                var combosHTML = renderizarCombos(0, cantidadCargar);
+
+                $('#combos-container').html(combosHTML);
+
+                // Animar entrada de cards
+                $('.combo-card').each(function (index) {
+                    $(this).css('animation-delay', (index * 0.1) + 's');
+                });
+
+                paginaActual = 1;
+                
+                // Verificar si ya se cargaron todos los combos
+                if (cantidadCargar >= todosLosCombos.length) {
+                    todosLosCombosCargados = true;
+                    $('#loading-spinner').hide();
+                } else {
+                    // Verificar si es necesario cargar más combos inmediatamente
+                    checkScrollPosition();
+                }
+            }
+
+            // Cargar más combos al hacer scroll
+            function cargarMasCombos() {
+                if (cargando || todosLosCombosCargados) return;
+
+                cargando = true;
+                $('#loading-spinner').show();
+
+                // Simulamos pequeño retraso para mostrar el spinner
+                setTimeout(function () {
+                    var inicio = paginaActual * elementosPorPagina;
+                    var fin = inicio + elementosPorPagina;
+
+                    if (inicio < todosLosCombos.length) {
+                        var nuevosCombos = renderizarCombos(inicio, fin);
+                        $('#combos-container').append(nuevosCombos);
+
+                        // Animar entrada de nuevas cards
+                        $('.combo-card').slice(inicio).each(function (index) {
+                            $(this).css('animation-delay', (index * 0.05) + 's');
+                        });
+
+                        paginaActual++;
+                        
+                        // Verificar si ya se cargaron todos los combos
+                        if (fin >= todosLosCombos.length) {
+                            todosLosCombosCargados = true;
+                        }
+                    } else {
+                        todosLosCombosCargados = true;
+                    }
+
+                    cargando = false;
+                    $('#loading-spinner').hide();
+                    
+                    // Verificar nuevamente si es necesario cargar más combos
+                    checkScrollPosition();
+                }, 500);
+            }
+
+            // Función mejorada para verificar la posición del scroll
+            function checkScrollPosition() {
+                // Altura del documento entero
+                var docHeight = $(document).height();
+                // Altura de la ventana visible
+                var winHeight = $(window).height();
+                // Posición actual del scroll
+                var scrollTop = $(window).scrollTop();
+                
+                // Calcular si estamos cerca del final o si el contenido no llena la página
+                var isNearBottom = scrollTop + winHeight > docHeight - 200;
+                var contentTooShort = docHeight <= winHeight + 100;
+                
+                // Si estamos cerca del final o el contenido es muy corto y hay más combos para cargar
+                if ((isNearBottom || contentTooShort) && !todosLosCombosCargados && !cargando) {
+                    cargarMasCombos();
+                }
+            }
+
+            // Detectar scroll usando throttling para mejor rendimiento
+            var scrollTimeout;
+            $(window).scroll(function () {
+                if (scrollTimeout) clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(checkScrollPosition, 100);
+            });
+            
+            // También verificar cuando se redimensiona la ventana
+            $(window).resize(function() {
+                if (!cargando) {
+                    checkScrollPosition();
+                }
+            });
+
+            // Iniciar carga de combos
+            cargarCombosIniciales();
+
+            // Manejar clic en botón añadir (delegación de eventos)
+            $(document).on('click', '.btn-add', function () {
+                var comboId = $(this).data('combo-id');
+                var comboNombre = $(this).data('combo-nombre');
+                var comboPrecio = $(this).data('combo-precio');
+
+                // Aquí se implementaría la lógica para añadir al pedido
+                console.log("Añadiendo: " + comboNombre + " ($" + comboPrecio + ")");
+
+                // Feedback visual al usuario con animación
+                var btn = $(this);
+                btn.addClass('added');
+                btn.html('Añadido');
+
+                setTimeout(function () {
+                    btn.removeClass('added');
+                    btn.html('Añadir');
+                }, 1500);
+            });
+        });
+    </script>
+}
