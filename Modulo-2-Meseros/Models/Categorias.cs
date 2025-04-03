@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Modulo_2_Meseros.Models;
 
-public partial class Categoria
+public partial class Categorias
 {
     public int CategoriaId { get; set; }
 

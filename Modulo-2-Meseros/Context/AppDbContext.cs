@@ -16,7 +16,7 @@ public partial class AppDbContext : DbContext
     {
     }
 
-    public virtual DbSet<Categoria> Categorias { get; set; }
+    public virtual DbSet<Categorias> Categorias { get; set; }
 
     public virtual DbSet<Combo> Combos { get; set; }
 
@@ -52,7 +52,7 @@ public partial class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Categoria>(entity =>
+        modelBuilder.Entity<Categorias>(entity =>
         {
             entity.HasKey(e => e.CategoriaId).HasName("PK__Categori__F353C1C543495682");
 
