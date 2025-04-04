@@ -19,7 +19,7 @@ public partial class Platos
 
     public int? CategoriaId { get; set; }
 
-    public virtual Categoria? Categoria { get; set; }
+    public virtual Categorias? Categoria { get; set; }
 
     public virtual ICollection<MenuItems> MenuItems { get; set; } = new List<MenuItems>();
 
