@@ -1,0 +1,43 @@
+﻿@model List<Modulo_2_Meseros.Models.Mesa>
+@{
+    ViewData["Title"] = "Mesas";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="~/css/EstadoMesas.css">
+</head>
+<body>
+    <section class="container">
+        <h1 style="color: white; text-align: center; margin-bottom: 2rem;">Gestión de Mesas</h1>
+
+        <section class="card__container">
+            @foreach (var mesa in Model)
+            {
+                <div class="card__bx" style="--clr: @(mesa.Estado == true? "#89ec5b" : "#ff6b6b")">
+                    <div class="card__data">
+                        <div class="mesa-image-container">
+                            <img src="https://www.sillasmesas.es/blog/wp-content/uploads/2019/04/mesa-restaurante-medidas-recomendadas-1.jpg"
+                                 class="mesa-image"
+                                 alt="Mesa @mesa.NumeroMesa">
+                        </div>
+                        <div class="card__content">
+                            <h3>Mesa #@mesa.NumeroMesa</h3>
+                            <p>Capacidad: @mesa.Capacidad personas</p>
+                            <p>Estado: <span class="estado-badge">@(mesa.Estado == true ? "Disponible" : "Ocupada")</span></p>
+                            <a href="#" class="mesa-action">@(mesa.Estado == true ? "Tomar Orden" : "Ver Orden")</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </section>
+    </section>
+</body>
+</html>
