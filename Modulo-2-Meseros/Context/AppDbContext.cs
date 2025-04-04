@@ -32,7 +32,7 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Menu> Menus { get; set; }
 
-    public virtual DbSet<MenuItem> MenuItems { get; set; }
+    public virtual DbSet<MenuItems> MenuItems { get; set; }
 
     public virtual DbSet<Mesa> Mesas { get; set; }
 
@@ -40,7 +40,7 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Pedido> Pedidos { get; set; }
 
-    public virtual DbSet<Plato> Platos { get; set; }
+    public virtual DbSet<Platos> Platos { get; set; }
 
     public virtual DbSet<Promocione> Promociones { get; set; }
 
@@ -79,7 +79,7 @@ public partial class AppDbContext : DbContext
             entity.HasMany(d => d.Platos).WithMany(p => p.Combos)
                 .UsingEntity<Dictionary<string, object>>(
                     "PlatosCombo",
-                    r => r.HasOne<Plato>().WithMany()
+                    r => r.HasOne<Platos>().WithMany()
                         .HasForeignKey("PlatoId")
                         .HasConstraintName("FK__PlatosCom__Plato__4222D4EF"),
                     l => l.HasOne<Combo>().WithMany()
@@ -230,7 +230,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Nombre).HasMaxLength(100);
         });
 
-        modelBuilder.Entity<MenuItem>(entity =>
+        modelBuilder.Entity<MenuItems>(entity =>
         {
             entity.HasKey(e => e.MenuItemId).HasName("PK__Menu_Ite__8943F7226E967256");
 
@@ -251,7 +251,7 @@ public partial class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Menu_Item__MenuI__4E88ABD4");
 
-            entity.HasOne(d => d.Plato).WithMany(p => p.MenuItems)
+            entity.HasOne(d => d.Platos).WithMany(p => p.MenuItems)
                 .HasForeignKey(d => d.PlatoId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Menu_Item__Plato__4F7CD00D");
@@ -311,7 +311,7 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("FK__PEDIDO__ID_MESER__6477ECF3");
         });
 
-        modelBuilder.Entity<Plato>(entity =>
+        modelBuilder.Entity<Platos>(entity =>
         {
             entity.HasKey(e => e.PlatoId).HasName("PK__Platos__4ABE1AA84BF767D0");
 
@@ -355,7 +355,7 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.ComboId)
                 .HasConstraintName("FK__Promocion__Combo__48CFD27E");
 
-            entity.HasOne(d => d.Plato).WithMany(p => p.PromocionesItems)
+            entity.HasOne(d => d.Platos).WithMany(p => p.PromocionesItems)
                 .HasForeignKey(d => d.PlatoId)
                 .HasConstraintName("FK__Promocion__Plato__47DBAE45");
 

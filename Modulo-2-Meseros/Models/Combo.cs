@@ -17,9 +17,9 @@ public partial class Combo
 
     public DateTime? FechaCreacion { get; set; }
 
-    public virtual ICollection<MenuItem> MenuItems { get; set; } = new List<MenuItem>();
+    public virtual ICollection<MenuItems> MenuItems { get; set; } = new List<MenuItems>();
 
     public virtual ICollection<PromocionesItem> PromocionesItems { get; set; } = new List<PromocionesItem>();
 
-    public virtual ICollection<Plato> Platos { get; set; } = new List<Plato>();
+    public virtual ICollection<Platos> Platos { get; set; } = new List<Platos>();
 }
