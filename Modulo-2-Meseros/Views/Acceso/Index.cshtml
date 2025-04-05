@@ -52,7 +52,7 @@
 
             if (token && token !== 'null' && token.trim() !== '') {
                 localStorage.setItem('authToken', token);
-                window.location.href = '@Url.Action("Index", "Home")';
+                window.location.href = '@Url.Action("EstadoMesas", "Mesero")';
             }
         });
     </script>

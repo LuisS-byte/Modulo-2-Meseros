@@ -1,0 +1,151 @@
+@model IEnumerable<dynamic>
+
+@{
+    ViewData["Title"] = "Promociones Disponibles";
+    @* Layout = "~/Views/Shared/_Layout.cshtml"; *@
+}
+
+<link rel="stylesheet" href="~/css/menu-promociones.css" />
+
+<div class="container-menu">
+    <div class="menu-header">
+        <h2 class="menu-title">PROMOCIONES DISPONIBLES</h2>
+    </div>
+
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+    {
+        <div class="alert-message alert-danger">
+            <i class="icon-warning"></i>Error: @ViewBag.ErrorMessage
+        </div>
+    }
+
+    <div id="promociones-container">
+        <!-- Las promociones se cargarán dinámicamente aquí -->
+    </div>
+
+    <div id="loading-spinner" class="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Mostrar spinner mientras cargamos
+            $('#loading-spinner').show();
+            
+            // Realizar la solicitud para obtener las promociones
+            $.ajax({
+                url: '@Url.Action("VisualizarMenuOnlyPromociones", "Mesero")',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    if (data && data.length > 0) {
+                        renderizarPromociones(data);
+                    } else {
+                        mostrarMensajeVacio();
+                    }
+                },
+                error: function (error) {
+                    console.error('Error al cargar promociones:', error);
+                    mostrarError('No se pudieron cargar las promociones. Por favor, inténtalo de nuevo más tarde.');
+                },
+                complete: function () {
+                    $('#loading-spinner').hide();
+                }
+            });
+            
+            // Función para mostrar mensaje cuando no hay promociones
+            function mostrarMensajeVacio() {
+                $('#promociones-container').html(`
+                    <div class="alert-message alert-warning">
+                        <i class="icon-warning"></i> No hay promociones disponibles actualmente.
+                    </div>
+                `);
+            }
+            
+            // Función para mostrar mensaje de error
+            function mostrarError(mensaje) {
+                $('#promociones-container').html(`
+                    <div class="alert-message alert-danger">
+                        <i class="icon-warning"></i> ${mensaje}
+                    </div>
+                `);
+            }
+            
+            // Función para renderizar las promociones
+            function renderizarPromociones(promociones) {
+                var promocionesHTML = '';
+                
+                promociones.forEach(function(promocion, index) {
+                    var fechaInicio = new Date(promocion.fechaInicio).toLocaleDateString();
+                    var fechaFin = new Date(promocion.fechaFin).toLocaleDateString();
+                    
+                    promocionesHTML += `
+                        <div class="promocion-card" style="animation-delay: ${index * 0.1}s">
+                            <div class="promocion-header">
+                                <div class="promocion-badge">${promocion.descuento}% DCTO</div>
+                                <h3 class="promocion-title">${promocion.descripcion}</h3>
+                                <p class="promocion-dates">Válido desde ${fechaInicio} hasta ${fechaFin}</p>
+                            </div>
+                            <div class="promocion-items">
+                    `;
+                    
+                    // Recorrer los items de la promoción
+                    promocion.items.forEach(function(item) {
+                        var precioOriginal = parseFloat(item.precioOriginal).toFixed(2);
+                        var precioDescuento = parseFloat(item.precioConDescuento).toFixed(2);
+                        
+                        promocionesHTML += `
+                            <div class="item-card">
+                                <div class="item-info">
+                                    <span class="item-type">${item.tipo}</span>
+                                    <h4 class="item-name">${item.nombre}</h4>
+                                    <div class="item-prices">
+                                        <span class="price-original">$${precioOriginal}</span>
+                                        <span class="price-discount">$${precioDescuento}</span>
+                                    </div>
+                                </div>
+                                <button class="btn-add" 
+                                        data-item-id="${item.id}" 
+                                        data-item-tipo="${item.tipo}" 
+                                        data-item-nombre="${item.nombre}" 
+                                        data-item-precio="${precioDescuento}">
+                                    Añadir
+                                </button>
+                            </div>
+                        `;
+                    });
+                    
+                    promocionesHTML += `
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                $('#promociones-container').html(promocionesHTML);
+                
+                // Manejar clic en botón añadir (delegación de eventos)
+                $(document).on('click', '.btn-add', function () {
+                    var itemId = $(this).data('item-id');
+                    var itemTipo = $(this).data('item-tipo');
+                    var itemNombre = $(this).data('item-nombre');
+                    var itemPrecio = $(this).data('item-precio');
+
+                    // Aquí se implementaría la lógica para añadir al pedido
+                    console.log("Añadiendo: " + itemNombre + " ($" + itemPrecio + ")");
+
+                    // Feedback visual al usuario con animación
+                    var btn = $(this);
+                    btn.addClass('added');
+                    btn.html('Añadido');
+
+                    setTimeout(function () {
+                        btn.removeClass('added');
+                        btn.html('Añadir');
+                    }, 1500);
+                });
+            }
+        });
+    </script>
+}

@@ -2,22 +2,28 @@
 
 @{
     ViewData["Title"] = "Detalle del Pedido";
-    var mesa = Model.FirstOrDefault()?.IdPedidoNavigation?.IdMesa ?? 0;
-    var pedido = Model.FirstOrDefault()?.IdPedido ?? 0;
-    var mesero = Model.FirstOrDefault()?.IdPedidoNavigation?.IdMeseroNavigation?.Nombre ?? "Mesero";
-    var total = Model.Sum(d => d.DetSubtotal ?? 0);
+
+    // Inicializar variables con valores por defecto
+    var mesa = 0;
+    var pedido = 0;
+    var mesero = "Mesero";
+    var total = 0m;
+
+    // Solo procesar si el modelo no es nulo
+    if (Model != null)
+    {
+        mesa = Model.FirstOrDefault()?.IdPedidoNavigation?.IdMesa ?? 0;
+        pedido = Model.FirstOrDefault()?.IdPedido ?? 0;
+        mesero = Model.FirstOrDefault()?.IdPedidoNavigation?.IdMeseroNavigation?.Nombre ?? "Mesero";
+        total = Model.Sum(d => d.DetSubtotal ?? 0);
+    }
 }
 
 <link rel="stylesheet" href="~/css/detalle-pedido.css"/>
 
-
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold">Pedido <span class="text-primary">#@pedido</span> - Mesa <span class="text-primary">#@mesa</span></h2>
-            <p class="text-muted">Atendido por: <strong>@mesero</strong></p>
-        </div>
-    </div>
+<div class="container mt-4">
+    <h2 class="mb-2">Pedido#@pedido - Mesa #@mesa</h2>
+    <h5 class="text-muted mb-4">Atendido por: @mesero</h5>
 
     <div class="row">
         <!-- Lista de platos -->
@@ -26,9 +32,12 @@
                 <h4 class="text-secondary">🍽️ Platos del Pedido</h4>
             </div>
 
-            @if (!Model.Any())
+            @if (Model == null || !Model.Any())
             {
-                <div class="alert alert-info">No hay platos añadidos.</div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No hay platos añadidos al pedido.
+                    Por favor, agregue platos usando los botones siguientes.
+                </div>
             }
             else
             {
@@ -78,7 +87,21 @@
 
             }
 
-            <a asp-action="AgregarPlato" asp-route-idMesa="@mesa" class="btn btn-outline-secondary">+ Añadir Plato</a>
+
+            <!-- Botones para añadir diferentes tipos de items -->
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <a asp-action="VisualizarMenuOnlyPlatos" asp-controller="Mesero" asp-route-idMesa="@mesa" class="btn btn-outline-primary">
+                    <i class="fas fa-utensils"></i> Añadir Plato
+                </a>
+
+                <a asp-action="VisualizarMenuOnlyCombos" asp-controller="Mesero" asp-route-idMesa="@mesa" class="btn btn-outline-secondary">
+                    <i class="fas fa-box"></i> Añadir Combo
+                </a>
+
+                <a asp-action="VisualizarMenuOnlyPromociones" asp-controller="Mesero" asp-route-idMesa="@mesa" class="btn btn-outline-info">
+                    <i class="fas fa-tag"></i> Añadir Promoción
+                </a>
+            </div>
         </div>
 
         <!-- Resumen del pedido -->
@@ -91,17 +114,20 @@
                     <hr />
                     <p class="fw-bold fs-5">Total: $@total.ToString("0.00")</p>
 
-                    <!-- Botones -->
-                    <form asp-action="EnviarCocina" method="post" class="mb-2">
-                        <input type="hidden" name="idMesa" value="@mesa" />
-                        <button type="submit" class="btn btn-danger w-100">🚀 Enviar a Cocina</button>
-                    </form>
+                <!-- Botones de acción -->
+                <form asp-action="EnviarCocina" method="post" class="mb-2">
+                    <input type="hidden" name="idMesa" value="@mesa" />
+                    <button type="submit" class="btn btn-danger w-100">
+                        <i class="fas fa-rocket"></i> Enviar a Cocina
+                    </button>
+                </form>
 
-                    <form asp-action="FinalizarOrden" method="post">
-                        <input type="hidden" name="idMesa" value="@mesa" />
-                        <button type="submit" class="btn btn-success w-100">✅ Finalizar Orden</button>
-                    </form>
-                </div>
+                <form asp-action="FinalizarOrden" method="post">
+                    <input type="hidden" name="idMesa" value="@mesa" />
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-check"></i> Finalizar Orden
+                    </button>
+                </form>
             </div>
         </div>
     </div>
