@@ -1,0 +1,97 @@
+﻿@model List<Modulo_2_Meseros.Models.DetallePedido>
+
+@{
+    ViewData["Title"] = "Detalle del Pedido";
+    var mesa = Model.FirstOrDefault()?.IdPedidoNavigation?.IdMesa ?? 0;
+    var pedido = Model.FirstOrDefault()?.IdPedido ?? 0;
+    var mesero = Model.FirstOrDefault()?.IdPedidoNavigation?.IdMeseroNavigation?.Nombre ?? "Mesero";
+    var total = Model.Sum(d => d.DetSubtotal ?? 0);
+}
+
+<link rel="stylesheet" href="~/css/style.css" />
+
+<div class="container mt-4">
+    <h2 class="mb-2">Pedido#@pedido  -  Mesa #@mesa</h2>
+    <h5 class="text-muted mb-4">Atendido por: @mesero</h5>
+
+    <div class="row">
+        <!-- Lista de platos -->
+        <div class="col-md-8">
+            <h4 class="mb-3 text-primary">Platos del Pedido</h4>
+
+            @if (!Model.Any())
+            {
+                <div class="alert alert-warning">No hay platos añadidos.</div>
+            }
+            else
+            {
+                foreach (var plato in Model)
+                {
+                    var nombreItem = plato.IdMenuNavigation?.Platos?.Nombre
+                    ?? plato.IdMenuNavigation?.Combo?.Nombre
+                    ?? plato.IdMenuNavigation?.Promocion?.Descripcion
+                    ?? "[Sin nombre]";
+
+                    <div class="card mb-3">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>@nombreItem</strong>
+                                <div class="text-muted small">
+                                    Comentarios: @(plato.DetComentarios ?? "Sin comentarios")
+                                </div>
+                            </div>
+
+                            <div>
+                                <span class="badge
+                                    @(plato.IdEstadopedidoNavigation?.EstadoNombre == "Solicitado" ? "bg-warning" :
+                                      plato.IdEstadopedidoNavigation?.EstadoNombre == "En Proceso" ? "bg-info" :
+                                      plato.IdEstadopedidoNavigation?.EstadoNombre == "Entregado" ? "bg-success" :
+                                      "bg-secondary")">
+                                    @plato.IdEstadopedidoNavigation?.EstadoNombre
+                                </span>
+                            </div>
+
+                            <div>
+                                <span class="badge bg-dark">x @plato.DetCantidad</span>
+                            </div>
+
+                            <div>
+                                $@plato.DetSubtotal?.ToString("0.00")
+                            </div>
+
+                            <div class="text-end">
+                                <a asp-action="CambiarEstadoDetallePedido" asp-route-idDetallePedido="@plato.IdPedido" asp-route-IdEstadoDetallePedido="3" class="btn btn-sm btn-success">✔️</a>
+                                <a asp-action="EditarDetalle" asp-route-id="@plato.IdPedido" class="btn btn-sm btn-primary">✏️</a>
+                                <a asp-action="EliminarDetalle" asp-route-id="@plato.IdPedido" class="btn btn-sm btn-danger">🗑️</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+
+            <a asp-action="AgregarPlato" asp-route-idMesa="@mesa" class="btn btn-outline-secondary mt-3">+ Añadir Plato</a>
+        </div>
+
+        <!-- Resumen del pedido -->
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h5>Resumen</h5>
+                <p><strong>Subtotal:</strong> $@total.ToString("0.00")</p>
+                <p><strong>Descuento:</strong> $0.00</p>
+                <hr />
+                <p><strong>Total:</strong> $@total.ToString("0.00")</p>
+
+                <!-- Botones de acción -->
+                <form asp-action="EnviarCocina" method="post" class="mb-2">
+                    <input type="hidden" name="idMesa" value="@mesa" />
+                    <button type="submit" class="btn btn-danger w-100">🚀 Enviar a Cocina</button>
+                </form>
+
+                <form asp-action="FinalizarOrden" method="post">
+                    <input type="hidden" name="idMesa" value="@mesa" />
+                    <button type="submit" class="btn btn-success w-100">✅ Finalizar Orden</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

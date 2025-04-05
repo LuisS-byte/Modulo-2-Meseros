@@ -259,13 +259,36 @@ namespace Modulo_2_Meseros.Controllers
         //[Authorize(Roles = "Mesero")]
         public async Task<IActionResult> VerDetallePedido(int idMesa)
         {
-            var detallePedido = await (from D in _context.DetallePedidos
-                                       join P in _context.Pedidos on D.IdPedido equals P.IdPedido
-                                       where P.IdMesa == idMesa
-                                       select D).ToListAsync();
 
-            return View(detallePedido);
+
+            var pedidoActivo = await _context.Pedidos
+            .Where(p => p.IdMesa == idMesa && (p.IdEstadopedido == 2)) // Ajustá los IDs de estados según tu DB
+            .OrderByDescending(p => p.IdPedido) // opcional, por si hubiera más de uno con estado activo
+            .FirstOrDefaultAsync();
+
+           /* if (pedidoActivo == null)
+            {
+                TempData["Error"] = "Esta mesa no tiene un pedido activo.";
+                return RedirectToAction("EstadoMesas"); // O la vista donde el mesero decide qué hacer
+            }*/
+
+            // Traer detalles del pedido activo
+            var detallePedido = await _context.DetallePedidos
+                .Include(dp => dp.IdPedidoNavigation)
+                    .ThenInclude(p => p.IdMeseroNavigation)
+                .Include(dp => dp.IdEstadopedidoNavigation)
+                .Include(dp => dp.IdMenuNavigation)
+                    .ThenInclude(mi => mi.Platos)
+                .Include(dp => dp.IdMenuNavigation)
+                    .ThenInclude(mi => mi.Combo)
+                .Include(dp => dp.IdMenuNavigation)
+                    .ThenInclude(mi => mi.Promocion)
+                .Where(dp => dp.IdPedido == pedidoActivo.IdPedido)
+                .ToListAsync();
+
+            return View("DetallePedidoView", detallePedido);
         }
+
 
         //[Authorize(Roles = "Mesero")]
         [HttpPost]
@@ -298,6 +321,12 @@ namespace Modulo_2_Meseros.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction("VerDetallePedido", new { idMesa = pedido.IdMesa });
+        }
+
+        public IActionResult DetallePedidoView()
+        {
+
+            return View();
         }
     }
 }
