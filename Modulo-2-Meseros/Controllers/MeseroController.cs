@@ -104,53 +104,75 @@ namespace Modulo_2_Meseros.Controllers
         //[Authorize(Roles = "Mesero")]
         public async Task<IActionResult> VisualizarMenuOnlyPromociones()
         {
-            var currentDate = DateOnly.FromDateTime(DateTime.Now);
+            try
+            {
+                var currentDate = DateOnly.FromDateTime(DateTime.Now);
 
-            var promociones = await (from p in _context.Promociones
-                                     join pi in _context.PromocionesItems on p.PromocionId equals pi.PromocionId
-                                     where p.FechaInicio <= currentDate
-                                        && p.FechaFin >= currentDate
-                                     select new
-                                     {
-                                         PromocionID = p.PromocionId,
-                                         Descripcion = p.Descripcion,
-                                         Descuento = p.Descuento,
-                                         FechaInicio = p.FechaInicio,
-                                         FechaFin = p.FechaFin,
-                                         Items = (pi.PlatoId != null) ?
-                                             _context.Platos.Where(pl => pl.PlatoId == pi.PlatoId)
-                                                 .Select(pl => new
-                                                 {
-                                                     Tipo = "Plato",
-                                                     ID = pl.PlatoId,
-                                                     Nombre = pl.Nombre,
-                                                     PrecioOriginal = pl.Precio,
-                                                     PrecioConDescuento = pl.Precio * (1 - (p.Descuento / 100))
-                                                 }).FirstOrDefault() :
-                                             _context.Combos.Where(co => co.ComboId == pi.ComboId)
-                                                 .Select(co => new
-                                                 {
-                                                     Tipo = "Combo",
-                                                     ID = co.ComboId,
-                                                     Nombre = co.Nombre,
-                                                     PrecioOriginal = co.Precio,
-                                                     PrecioConDescuento = co.Precio * (1 - (p.Descuento / 100))
-                                                 }).FirstOrDefault()
-                                     }).ToListAsync();
+                var promociones = await (from p in _context.Promociones
+                                         join pi in _context.PromocionesItems on p.PromocionId equals pi.PromocionId
+                                         where p.FechaInicio <= currentDate
+                                            && p.FechaFin >= currentDate
+                                         select new
+                                         {
+                                             PromocionID = p.PromocionId,
+                                             Descripcion = p.Descripcion,
+                                             Descuento = p.Descuento,
+                                             FechaInicio = p.FechaInicio,
+                                             FechaFin = p.FechaFin,
+                                             Items = (pi.PlatoId != null) ?
+                                                 _context.Platos.Where(pl => pl.PlatoId == pi.PlatoId)
+                                                     .Select(pl => new
+                                                     {
+                                                         Tipo = "Plato",
+                                                         ID = pl.PlatoId,
+                                                         Nombre = pl.Nombre,
+                                                         PrecioOriginal = pl.Precio,
+                                                         PrecioConDescuento = pl.Precio * (1 - (p.Descuento / 100))
+                                                     }).FirstOrDefault() :
+                                                 _context.Combos.Where(co => co.ComboId == pi.ComboId)
+                                                     .Select(co => new
+                                                     {
+                                                         Tipo = "Combo",
+                                                         ID = co.ComboId,
+                                                         Nombre = co.Nombre,
+                                                         PrecioOriginal = co.Precio,
+                                                         PrecioConDescuento = co.Precio * (1 - (p.Descuento / 100))
+                                                     }).FirstOrDefault()
+                                         }).ToListAsync();
 
-            // Group by promotion since one promotion can have multiple items
-            var result = promociones.GroupBy(p => p.PromocionID)
-                .Select(g => new
+                // Group by promotion since one promotion can have multiple items
+                var result = promociones.GroupBy(p => p.PromocionID)
+                    .Select(g => new
+                    {
+                        PromocionID = g.Key,
+                        Descripcion = g.First().Descripcion,
+                        Descuento = g.First().Descuento,
+                        FechaInicio = g.First().FechaInicio,
+                        FechaFin = g.First().FechaFin,
+                        Items = g.Select(i => i.Items).Where(i => i != null).ToList()
+                    }).ToList();
+
+                // Para solicitudes AJAX devolvemos JSON
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 {
-                    PromocionID = g.Key,
-                    Descripcion = g.First().Descripcion,
-                    Descuento = g.First().Descuento,
-                    FechaInicio = g.First().FechaInicio,
-                    FechaFin = g.First().FechaFin,
-                    Items = g.Select(i => i.Items).Where(i => i != null).ToList()
-                }).ToList();
+                    return Json(result);
+                }
 
-            return Ok(result);
+                // Para solicitudes normales devolvemos la vista
+                return View();
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+
+                // Para solicitudes AJAX devolvemos un error JSON
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return StatusCode(500, new { error = ex.Message });
+                }
+
+                return View(new List<dynamic>());
+            }
         }
 
         //[Authorize(Roles = "Mesero")]
