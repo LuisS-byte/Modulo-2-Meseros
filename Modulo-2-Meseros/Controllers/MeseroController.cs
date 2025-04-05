@@ -279,9 +279,13 @@ namespace Modulo_2_Meseros.Controllers
         }
 
         //[Authorize(Roles = "Mesero")]
-        public async Task<IActionResult> VerDetallePedido(int idMesa)
+        public async Task<IActionResult> VerDetallePedido(int idMesa, bool nuevoPedido)
         {
-
+            if (nuevoPedido)
+            {
+                
+            return View("DetallePedidoView",    null);
+            }
 
             var pedidoActivo = await _context.Pedidos
             .Where(p => p.IdMesa == idMesa && (p.IdEstadopedido == 2)) // Ajustá los IDs de estados según tu DB

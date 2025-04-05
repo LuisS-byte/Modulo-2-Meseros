@@ -2,16 +2,27 @@
 
 @{
     ViewData["Title"] = "Detalle del Pedido";
-    var mesa = Model.FirstOrDefault()?.IdPedidoNavigation?.IdMesa ?? 0;
-    var pedido = Model.FirstOrDefault()?.IdPedido ?? 0;
-    var mesero = Model.FirstOrDefault()?.IdPedidoNavigation?.IdMeseroNavigation?.Nombre ?? "Mesero";
-    var total = Model.Sum(d => d.DetSubtotal ?? 0);
+
+    // Inicializar variables con valores por defecto
+    var mesa = 0;
+    var pedido = 0;
+    var mesero = "Mesero";
+    var total = 0m;
+
+    // Solo procesar si el modelo no es nulo
+    if (Model != null)
+    {
+        mesa = Model.FirstOrDefault()?.IdPedidoNavigation?.IdMesa ?? 0;
+        pedido = Model.FirstOrDefault()?.IdPedido ?? 0;
+        mesero = Model.FirstOrDefault()?.IdPedidoNavigation?.IdMeseroNavigation?.Nombre ?? "Mesero";
+        total = Model.Sum(d => d.DetSubtotal ?? 0);
+    }
 }
 
 <link rel="stylesheet" href="~/css/style.css" />
 
 <div class="container mt-4">
-    <h2 class="mb-2">Pedido#@pedido  -  Mesa #@mesa</h2>
+    <h2 class="mb-2">Pedido#@pedido - Mesa #@mesa</h2>
     <h5 class="text-muted mb-4">Atendido por: @mesero</h5>
 
     <div class="row">
@@ -19,9 +30,12 @@
         <div class="col-md-8">
             <h4 class="mb-3 text-primary">Platos del Pedido</h4>
 
-            @if (!Model.Any())
+            @if (Model == null || !Model.Any())
             {
-                <div class="alert alert-warning">No hay platos añadidos.</div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No hay platos añadidos al pedido.
+                    Por favor, agregue platos usando los botones siguientes.
+                </div>
             }
             else
             {
