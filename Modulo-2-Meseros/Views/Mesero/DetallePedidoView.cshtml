@@ -1,0 +1,108 @@
+﻿@model List<Modulo_2_Meseros.Models.DetallePedido>
+
+@{
+    ViewData["Title"] = "Detalle del Pedido";
+    var mesa = Model.FirstOrDefault()?.IdPedidoNavigation?.IdMesa ?? 0;
+    var pedido = Model.FirstOrDefault()?.IdPedido ?? 0;
+    var mesero = Model.FirstOrDefault()?.IdPedidoNavigation?.IdMeseroNavigation?.Nombre ?? "Mesero";
+    var total = Model.Sum(d => d.DetSubtotal ?? 0);
+}
+
+<link rel="stylesheet" href="~/css/detalle-pedido.css"/>
+
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">Pedido <span class="text-primary">#@pedido</span> - Mesa <span class="text-primary">#@mesa</span></h2>
+            <p class="text-muted">Atendido por: <strong>@mesero</strong></p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Lista de platos -->
+        <div class="col-lg-8">
+            <div class="mb-3">
+                <h4 class="text-secondary">🍽️ Platos del Pedido</h4>
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info">No hay platos añadidos.</div>
+            }
+            else
+            {
+                @foreach (var plato in Model)
+                {
+                    var nombreItem = plato.IdMenuNavigation?.Platos?.Nombre
+                    ?? plato.IdMenuNavigation?.Combo?.Nombre
+                    ?? plato.IdMenuNavigation?.Promocion?.Descripcion
+                    ?? "[Sin nombre]";
+
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-body">
+                            <div class="row align-items-center text-center">
+                                <div class="col-md-3 text-start">
+                                    <strong class="fs-6">@nombreItem</strong>
+                                    <div class="small text-muted">Comentarios: @(plato.DetComentarios ?? "Sin comentarios")</div>
+                                </div>
+
+                                <div class="col-md-2">
+                                    <span class="badge
+                        @(plato.IdEstadopedidoNavigation?.EstadoNombre == "Solicitado" ? "bg-warning" :
+                          plato.IdEstadopedidoNavigation?.EstadoNombre == "En Proceso" ? "bg-info" :
+                          plato.IdEstadopedidoNavigation?.EstadoNombre == "Entregado" ? "bg-success" :
+                          plato.IdEstadopedidoNavigation?.EstadoNombre == "Finalizado" ? "bg-secondary" :
+                          "bg-dark")">
+                                        @plato.IdEstadopedidoNavigation?.EstadoNombre
+                                    </span>
+                                </div>
+
+                                <div class="col-md-1">
+                                    <span class="badge bg-dark">@plato.DetCantidad</span>
+                                </div>
+
+                                <div class="col-md-2">
+                                    $@plato.DetSubtotal?.ToString("0.00")
+                                </div>
+
+                                <div class="col-md-4 text-end">
+                                    <a asp-action="CambiarEstadoDetallePedido" asp-route-idDetallePedido="@plato.IdPedido" asp-route-IdEstadoDetallePedido="3" class="btn btn-outline-success btn-sm me-1">✔️</a>
+                                    <a asp-action="EditarDetalle" asp-route-id="@plato.IdPedido" class="btn btn-outline-primary btn-sm me-1">✏️</a>
+                                    <a asp-action="EliminarDetalle" asp-route-id="@plato.IdPedido" class="btn btn-outline-danger btn-sm">🗑️</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+            }
+
+            <a asp-action="AgregarPlato" asp-route-idMesa="@mesa" class="btn btn-outline-secondary">+ Añadir Plato</a>
+        </div>
+
+        <!-- Resumen del pedido -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="mb-3 text-secondary">📋 Resumen del Pedido</h5>
+                    <p><strong>Subtotal:</strong> $@total.ToString("0.00")</p>
+                    <p><strong>Descuento:</strong> $0.00</p>
+                    <hr />
+                    <p class="fw-bold fs-5">Total: $@total.ToString("0.00")</p>
+
+                    <!-- Botones -->
+                    <form asp-action="EnviarCocina" method="post" class="mb-2">
+                        <input type="hidden" name="idMesa" value="@mesa" />
+                        <button type="submit" class="btn btn-danger w-100">🚀 Enviar a Cocina</button>
+                    </form>
+
+                    <form asp-action="FinalizarOrden" method="post">
+                        <input type="hidden" name="idMesa" value="@mesa" />
+                        <button type="submit" class="btn btn-success w-100">✅ Finalizar Orden</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

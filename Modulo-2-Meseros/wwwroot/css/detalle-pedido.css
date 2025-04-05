@@ -1,0 +1,86 @@
+﻿/* General */
+body {
+    background-color: #0f0f1b;
+    color: #ffffff;
+}
+
+.card {
+    background-color: #1c1c2b;
+    border: none;
+    border-radius: 12px;
+}
+
+.card-body {
+    padding: 1rem 1.25rem;
+}
+
+/* Estilo para el título */
+h2 span, h5 {
+    color: #ffffff;
+}
+
+/* Badges de estados personalizados */
+.badge {
+    font-size: 0.85rem;
+    padding: 0.45em 0.75em;
+    border-radius: 20px;
+    font-weight: 600;
+    min-width: 90px;
+    display: inline-block;
+    text-align: center;
+}
+
+    /* Colores según estado */
+    .badge.bg-warning {
+        background-color: #facc15;
+        color: #000;
+    }
+
+    .badge.bg-info {
+        background-color: #0ea5e9;
+        color: white;
+    }
+
+    .badge.bg-success {
+        background-color: #10b981;
+        color: white;
+    }
+
+    .badge.bg-secondary {
+        background-color: #6b7280;
+        color: white;
+    }
+
+    .badge.bg-dark {
+        background-color: #374151;
+        color: white;
+    }
+
+/* Botones */
+.btn-outline-success,
+.btn-outline-primary,
+.btn-outline-danger,
+.btn-outline-secondary {
+    border-radius: 10px;
+    font-size: 0.9rem;
+}
+
+/* Tabla/resumen */
+.card .fw-bold {
+    font-size: 1.25rem;
+}
+
+/* Alinear columnas */
+.row .col-md-2, .row .col-md-1 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Estado siempre centrado */
+.estado-align {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
