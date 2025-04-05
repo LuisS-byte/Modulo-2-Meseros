@@ -69,7 +69,20 @@
                 }
             }
 
-            <a asp-action="AgregarPlato" asp-route-idMesa="@mesa" class="btn btn-outline-secondary mt-3">+ Añadir Plato</a>
+            <!-- Botones para añadir diferentes tipos de items -->
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <a asp-action="VisualizarMenuOnlyPlatos" asp-controller="Mesero" asp-route-idMesa="@mesa" class="btn btn-outline-primary">
+                    <i class="fas fa-utensils"></i> Añadir Plato
+                </a>
+
+                <a asp-action="VisualizarMenuOnlyCombos" asp-controller="Mesero" asp-route-idMesa="@mesa" class="btn btn-outline-secondary">
+                    <i class="fas fa-box"></i> Añadir Combo
+                </a>
+
+                <a asp-action="VisualizarMenuOnlyPromociones" asp-controller="Mesero" asp-route-idMesa="@mesa" class="btn btn-outline-info">
+                    <i class="fas fa-tag"></i> Añadir Promoción
+                </a>
+            </div>
         </div>
 
         <!-- Resumen del pedido -->
@@ -84,12 +97,16 @@
                 <!-- Botones de acción -->
                 <form asp-action="EnviarCocina" method="post" class="mb-2">
                     <input type="hidden" name="idMesa" value="@mesa" />
-                    <button type="submit" class="btn btn-danger w-100">🚀 Enviar a Cocina</button>
+                    <button type="submit" class="btn btn-danger w-100">
+                        <i class="fas fa-rocket"></i> Enviar a Cocina
+                    </button>
                 </form>
 
                 <form asp-action="FinalizarOrden" method="post">
                     <input type="hidden" name="idMesa" value="@mesa" />
-                    <button type="submit" class="btn btn-success w-100">✅ Finalizar Orden</button>
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-check"></i> Finalizar Orden
+                    </button>
                 </form>
             </div>
         </div>
