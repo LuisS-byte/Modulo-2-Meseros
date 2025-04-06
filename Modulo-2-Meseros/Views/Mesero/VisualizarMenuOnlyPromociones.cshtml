@@ -108,6 +108,7 @@
                                 </div>
                               <form method="post" action="/Mesero/AgregarItemTemporal">
                             <input type="hidden" name="idMesa" value="@ViewBag.IdMesa" />
+                                     <input type="hidden" name="esNuevo" value="@ViewBag.esNuevo" />
                              <input type="hidden" name="item.IdMenu" value="${item.id}" />
                              <input type="hidden" name="item.Nombre" value="${item.nombre}" />
                              <input type="hidden" name="item.Cantidad" value="1" />

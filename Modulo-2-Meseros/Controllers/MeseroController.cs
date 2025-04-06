@@ -80,9 +80,10 @@ namespace Modulo_2_Meseros.Controllers
         }
 
         //[Authorize(Roles = "Mesero")]
-        public async Task<IActionResult> VisualizarMenuOnlyCombos(int idMesa)
+        public async Task<IActionResult> VisualizarMenuOnlyCombos(int idMesa, bool? esNuevo)
         {
             ViewBag.IdMesa = idMesa;
+            ViewBag.EsNuevo = esNuevo;
             var today = DateTime.Today;
 
             var combos = await (from c in _context.Combos
@@ -106,9 +107,10 @@ namespace Modulo_2_Meseros.Controllers
         }
 
         //[Authorize(Roles = "Mesero")]
-        public async Task<IActionResult> VisualizarMenuOnlyPromociones(int idMesa)
+        public async Task<IActionResult> VisualizarMenuOnlyPromociones(int idMesa, bool? esNuevo)
         {
             ViewBag.IdMesa = idMesa;
+            ViewBag.EsNuevo = esNuevo;
             try
             {
                 var currentDate = DateOnly.FromDateTime(DateTime.Now);
