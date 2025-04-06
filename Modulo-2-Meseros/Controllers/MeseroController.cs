@@ -520,6 +520,26 @@ namespace Modulo_2_Meseros.Controllers
             return RedirectToAction("EstadoMesas");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> EditarDetallePedido(DetallePeiddoDTOEd dto)
+        {
+            var detalle = await _context.DetallePedidos
+             .Include(d => d.IdPedidoNavigation)
+            .FirstOrDefaultAsync(d => d.IdPedido == dto.IdPedido && d.IdMenu == dto.IdMenu);
+    
+
+            if (detalle == null)
+                return NotFound();
+
+            detalle.DetCantidad = dto.DetCantidad;
+            detalle.DetComentarios = dto.DetComentarios;
+            detalle.DetSubtotal = detalle.DetCantidad * detalle.DetPrecio;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Detalle actualizado correctamente.";
+            return RedirectToAction("VerDetallePedido", new { idMesa = detalle.IdPedidoNavigation.IdMesa });
+        }
 
     }
 }
