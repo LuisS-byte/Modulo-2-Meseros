@@ -1,5 +1,6 @@
 ﻿@model List<Modulo_2_Meseros.Models.DetallePedido>
 
+
 @{
     ViewData["Title"] = "Detalle del Pedido";
 
@@ -8,6 +9,8 @@
     var pedido = 0;
     var mesero = "Mesero";
     var total = 0m;
+    var puedeFinalizar = Model.All(p =>
+                   p.IdEstadopedido == 4 || p.IdEstadopedido == 5);
 
     // Solo procesar si el modelo no es nulo
     if (Model != null)
@@ -22,6 +25,14 @@
 <link rel="stylesheet" href="~/css/detalle-pedido.css"/>
 
 <div class="container mt-4">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+
     <h2 class="mb-2">Pedido#@pedido - Mesa #@mesa</h2>
     <h5 class="text-muted mb-4">Atendido por: @mesero</h5>
 
@@ -58,11 +69,19 @@
 
                                 <div class="col-md-2">
                                     <span class="badge
-                        @(plato.IdEstadopedidoNavigation?.EstadoNombre == "Solicitado" ? "bg-warning" :
-                          plato.IdEstadopedidoNavigation?.EstadoNombre == "En Proceso" ? "bg-info" :
-                          plato.IdEstadopedidoNavigation?.EstadoNombre == "Entregado" ? "bg-success" :
-                          plato.IdEstadopedidoNavigation?.EstadoNombre == "Finalizado" ? "bg-secondary" :
-                          "bg-dark")">
+                                        @(plato.IdEstadopedidoNavigation?.EstadoNombre == "Solicitado" ? "bg-warning text-dark" :
+                                        plato.IdEstadopedidoNavigation?.EstadoNombre == "En Proceso" ? "bg-info text-dark" :
+                                        plato.IdEstadopedidoNavigation?.EstadoNombre == "Entregado" ? "bg-success" :
+                                        plato.IdEstadopedidoNavigation?.EstadoNombre == "Finalizado" ? "bg-secondary" :
+                                        plato.IdEstadopedidoNavigation?.EstadoNombre == "Cancelado" ? "bg-danger text-white" :
+                                        "bg-dark")">
+                                        @* Puedes incluir íconos para mejor visualización *@
+                                        @(plato.IdEstadopedidoNavigation?.EstadoNombre == "Solicitado" ? "🕓 " :
+                                            plato.IdEstadopedidoNavigation?.EstadoNombre == "En Proceso" ? "⏳ " :
+                                            plato.IdEstadopedidoNavigation?.EstadoNombre == "Entregado" ? "✅ " :
+                                            plato.IdEstadopedidoNavigation?.EstadoNombre == "Finalizado" ? "🏁 " :
+                                            plato.IdEstadopedidoNavigation?.EstadoNombre == "Cancelado" ? "❌ " :
+                                            "")
                                         @plato.IdEstadopedidoNavigation?.EstadoNombre
                                     </span>
                                 </div>
@@ -77,7 +96,7 @@
 
                                 <div class="col-md-4 text-end">
                                     <!-- ✔️ Cambiar a Entregado (estado 4) -->
-                                    @if (plato.IdEstadopedido == 3 )
+                                    @if (plato.IdEstadopedido == 3)
                                     {
                                         <form asp-action="CambiarEstadoDetallePedido" method="post" class="d-inline">
                                             <input type="hidden" name="idDetallePedido" value="@plato.IdPedido" />
@@ -90,7 +109,8 @@
                                     <!-- ❌ Cancelar (estado 5), solo si está en estado 1 (Solicitado) -->
                                     @if (plato.IdEstadopedido == 1)
                                     {
-                                        <form asp-action="CambiarEstadoDetallePedido" method="post" class="d-inline">
+                                        <form asp-action="CambiarEstadoDetallePedido" method="post" class="d-inline"
+                                              onsubmit="return confirm('¿Estás seguro de CANCELAR este Plato?');">
                                             <input type="hidden" name="idDetallePedido" value="@plato.IdPedido" />
                                             <input type="hidden" name="idMenu" value="@plato.IdMenu" />
                                             <input type="hidden" name="IdEstadoDetallePedido" value="5" />
@@ -98,10 +118,65 @@
                                         </form>
                                     }
 
+                                    @if (plato.IdEstadopedido == 1)
+                                    {
+                                        <!-- Botón que abre el modal -->
+                                        <button type="button" class="btn btn-outline-primary btn-sm me-1"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editarDetalleModal_@($"{plato.IdPedido}_{plato.IdMenu}")">
+                                            ✏️
+                                        </button>
 
-                                    @* ✏️ Botón editar y 🗑️ eliminar se mantienen *@
-                                    <a asp-action="EditarDetalle" asp-route-id="@plato.IdPedido" class="btn btn-outline-primary btn-sm me-1">✏️</a>
-                                    <a asp-action="EliminarDetalle" asp-route-id="@plato.IdPedido" class="btn btn-outline-danger btn-sm">🗑️</a>
+                                        <!-- Modal de edición -->
+                                        <div class="modal fade" id="editarDetalleModal_@($"{plato.IdPedido}_{plato.IdMenu}")" tabindex="-1"
+                                             aria-labelledby="modalLabel_@($"{plato.IdPedido}_{plato.IdMenu}")" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content bg-dark text-white border border-secondary shadow-lg">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="modalLabel_@($"{plato.IdPedido}_{plato.IdMenu}")">
+                                                            ✏️ Editar: <span class="text-info">@nombreItem</span>
+                                                        </h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                                    </div>
+
+                                                    <form asp-action="EditarDetallePedido" method="post">
+                                                        <div class="modal-body">
+                                                            <input type="hidden" name="IdPedido" value="@plato.IdPedido" />
+                                                            <input type="hidden" name="IdMenu" value="@plato.IdMenu" />
+
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Cantidad</label>
+                                                                <input type="number" name="DetCantidad" class="form-control bg-dark text-white border-secondary"
+                                                                       min="1" value="@plato.DetCantidad" required />
+                                                            </div>
+
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Comentarios</label>
+                                                                <textarea name="DetComentarios" class="form-control bg-dark text-white border-secondary" rows="2">@plato.DetComentarios</textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="submit" class="btn btn-primary">
+                                                                <i class="fas fa-save"></i> Guardar Cambios
+                                                            </button>
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                                <i class="fas fa-times"></i> Cancelar
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+
+                                    
+                                
+                                 
+                           
+                                   
+
+
                                 </div>
 
                             </div>
@@ -137,22 +212,40 @@
                     <p><strong>Descuento:</strong> $0.00</p>
                     <hr />
                     <p class="fw-bold fs-5">Total: $@total.ToString("0.00")</p>
+                   
+
+                    @if (!puedeFinalizar)
+                    {
+                        <div class="alert alert-warning mt-2">
+                            ⚠️ Para finalizar la orden, todos los platos deben estar entregados o cancelados.
+                        </div>
+                    }
 
                 <!-- Botones de acción -->
-                <form asp-action="EnviarCocina" method="post" class="mb-2">
-                    <input type="hidden" name="idMesa" value="@mesa" />
-                    <button type="submit" class="btn btn-danger w-100">
-                        <i class="fas fa-rocket"></i> Enviar a Cocina
-                    </button>
-                </form>
+                    <form asp-action="FinalizarOrden" method="post">
+                        <input type="hidden" name="idMesa" value="@mesa" />
+                        <button type="submit"
+                                class="btn btn-success w-100"
+                        @(puedeFinalizar ? "" : "disabled")
+                                title="@(puedeFinalizar ? "Finalizar orden" : "Debes entregar o cancelar todos los platos primero")">
+                            <i class="fas fa-check"></i> Finalizar Orden
+                        </button>
+                    </form>
 
-                <form asp-action="FinalizarOrden" method="post">
-                    <input type="hidden" name="idMesa" value="@mesa" />
-                    <button type="submit" class="btn btn-success w-100">
-                        <i class="fas fa-check"></i> Finalizar Orden
-                    </button>
-                </form>
             </div>
         </div>
     </div>
 </div>
+
+    @section Scripts {
+        <script>
+            // Espera 4 segundos y luego oculta la alerta (si está)
+            setTimeout(function () {
+                var alerta = document.querySelector(".alert-dismissible");
+                if (alerta) {
+                    var alertaBootstrap = bootstrap.Alert.getOrCreateInstance(alerta);
+                    alertaBootstrap.close();
+                }
+            }, 1200);
+        </script>
+    }

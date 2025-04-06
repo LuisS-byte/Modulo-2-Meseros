@@ -1,4 +1,5 @@
 ﻿@model List<Modulo_2_Meseros.Models.Mesa>
+@await Html.PartialAsync("_AlertaTempData")
 @{
     ViewData["Title"] = "Mesas";
     Layout = "~/Views/Shared/_LayautMenu.cshtml";
@@ -7,6 +8,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    @section Scripts {
+        <script>
+            setTimeout(() => {
+                const alert = document.querySelector(".alert");
+                if (alert) {
+                    alert.classList.add("fade");
+                    alert.classList.remove("show");
+                    setTimeout(() => alert.remove(), 500);
+                }
+            }, 2500); // Ocultar tras 2.5 de segundos
+        </script>
+    }
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewData["Title"]</title>
