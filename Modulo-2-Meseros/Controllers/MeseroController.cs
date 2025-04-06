@@ -476,5 +476,50 @@ namespace Modulo_2_Meseros.Controllers
             return RedirectToAction("PreDetallePedido", new { idMesa });
         }
 
+        [HttpPost]
+        public async Task<IActionResult> FinalizarOrden(int idMesa)
+        {
+            // Buscar el pedido en estado "En Proceso" (ID = 2)
+            var pedido = await _context.Pedidos
+                .Where(p => p.IdMesa == idMesa && p.IdEstadopedido == 2)
+                .OrderByDescending(p => p.IdPedido)
+                .FirstOrDefaultAsync();
+
+            if (pedido == null)
+            {
+                TempData["Error"] = "No se encontró un pedido activo para esta mesa.";
+                return RedirectToAction("EstadoMesas");
+            }
+
+            // Obtener los detalles del pedido
+            var detalles = await _context.DetallePedidos
+                .Where(dp => dp.IdPedido == pedido.IdPedido)
+                .ToListAsync();
+
+            // Verificar que todos los ítems estén en Entregado (4) o Cancelado (5)
+            bool puedeFinalizar = detalles.All(dp =>
+                dp.IdEstadopedido == 4 || dp.IdEstadopedido == 5);
+
+            if (!puedeFinalizar)
+            {
+                TempData["Error"] = "La orden no puede ser finalizada. Hay ítems aún pendientes.";
+                return RedirectToAction("VerDetallePedido", new { idMesa });
+            }
+
+            // Cambiar estado del pedido a "Finalizado" (ID = 3)
+            pedido.IdEstadopedido = 3;
+
+            // Liberar mesa
+            var mesa = await _context.Mesas.FindAsync(idMesa);
+            if (mesa != null)
+                mesa.Estado = true;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "La orden fue finalizada correctamente.";
+            return RedirectToAction("EstadoMesas");
+        }
+
+
     }
 }

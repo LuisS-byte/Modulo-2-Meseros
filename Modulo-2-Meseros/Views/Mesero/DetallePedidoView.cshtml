@@ -1,5 +1,6 @@
 ﻿@model List<Modulo_2_Meseros.Models.DetallePedido>
 
+
 @{
     ViewData["Title"] = "Detalle del Pedido";
 
@@ -8,6 +9,8 @@
     var pedido = 0;
     var mesero = "Mesero";
     var total = 0m;
+    var puedeFinalizar = Model.All(p =>
+                   p.IdEstadopedido == 4 || p.IdEstadopedido == 5);
 
     // Solo procesar si el modelo no es nulo
     if (Model != null)
@@ -148,15 +151,28 @@
                     <p><strong>Descuento:</strong> $0.00</p>
                     <hr />
                     <p class="fw-bold fs-5">Total: $@total.ToString("0.00")</p>
+                   
+
+                    @if (!puedeFinalizar)
+                    {
+                        <div class="alert alert-warning mt-2">
+                            ⚠️ Para finalizar la orden, todos los platos deben estar entregados o cancelados.
+                        </div>
+                    }
 
                 <!-- Botones de acción -->
-                <form asp-action="FinalizarOrden" method="post">
-                    <input type="hidden" name="idMesa" value="@mesa" />
-                    <button type="submit" class="btn btn-success w-100">
-                        <i class="fas fa-check"></i> Finalizar Orden
-                    </button>
-                </form>
+                    <form asp-action="FinalizarOrden" method="post">
+                        <input type="hidden" name="idMesa" value="@mesa" />
+                        <button type="submit"
+                                class="btn btn-success w-100"
+                        @(puedeFinalizar ? "" : "disabled")
+                                title="@(puedeFinalizar ? "Finalizar orden" : "Debes entregar o cancelar todos los platos primero")">
+                            <i class="fas fa-check"></i> Finalizar Orden
+                        </button>
+                    </form>
+
             </div>
         </div>
     </div>
 </div>
+   
