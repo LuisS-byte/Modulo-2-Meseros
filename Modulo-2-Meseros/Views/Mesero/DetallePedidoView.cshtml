@@ -58,11 +58,19 @@
 
                                 <div class="col-md-2">
                                     <span class="badge
-                        @(plato.IdEstadopedidoNavigation?.EstadoNombre == "Solicitado" ? "bg-warning" :
-                          plato.IdEstadopedidoNavigation?.EstadoNombre == "En Proceso" ? "bg-info" :
-                          plato.IdEstadopedidoNavigation?.EstadoNombre == "Entregado" ? "bg-success" :
-                          plato.IdEstadopedidoNavigation?.EstadoNombre == "Finalizado" ? "bg-secondary" :
-                          "bg-dark")">
+                                        @(plato.IdEstadopedidoNavigation?.EstadoNombre == "Solicitado" ? "bg-warning text-dark" :
+                                        plato.IdEstadopedidoNavigation?.EstadoNombre == "En Proceso" ? "bg-info text-dark" :
+                                        plato.IdEstadopedidoNavigation?.EstadoNombre == "Entregado" ? "bg-success" :
+                                        plato.IdEstadopedidoNavigation?.EstadoNombre == "Finalizado" ? "bg-secondary" :
+                                        plato.IdEstadopedidoNavigation?.EstadoNombre == "Cancelado" ? "bg-danger text-white" :
+                                        "bg-dark")">
+                                        @* Puedes incluir íconos para mejor visualización *@
+                                        @(plato.IdEstadopedidoNavigation?.EstadoNombre == "Solicitado" ? "🕓 " :
+                                            plato.IdEstadopedidoNavigation?.EstadoNombre == "En Proceso" ? "⏳ " :
+                                            plato.IdEstadopedidoNavigation?.EstadoNombre == "Entregado" ? "✅ " :
+                                            plato.IdEstadopedidoNavigation?.EstadoNombre == "Finalizado" ? "🏁 " :
+                                            plato.IdEstadopedidoNavigation?.EstadoNombre == "Cancelado" ? "❌ " :
+                                            "")
                                         @plato.IdEstadopedidoNavigation?.EstadoNombre
                                     </span>
                                 </div>
@@ -77,9 +85,11 @@
 
                                 <div class="col-md-4 text-end">
                                     <!-- ✔️ Cambiar a Entregado (estado 4) -->
-                                    @if (plato.IdEstadopedido == 3 )
+                                    <!-- ✔️ Cambiar a Entregado (estado 4) -->
+                                    @if (plato.IdEstadopedido == 3)
                                     {
-                                        <form asp-action="CambiarEstadoDetallePedido" method="post" class="d-inline">
+                                        <form asp-action="CambiarEstadoDetallePedido" method="post" class="d-inline"
+                                              onsubmit="return confirm('¿Marcar este ítem como ENTREGADO?');">
                                             <input type="hidden" name="idDetallePedido" value="@plato.IdPedido" />
                                             <input type="hidden" name="idMenu" value="@plato.IdMenu" />
                                             <input type="hidden" name="IdEstadoDetallePedido" value="4" />
@@ -90,7 +100,8 @@
                                     <!-- ❌ Cancelar (estado 5), solo si está en estado 1 (Solicitado) -->
                                     @if (plato.IdEstadopedido == 1)
                                     {
-                                        <form asp-action="CambiarEstadoDetallePedido" method="post" class="d-inline">
+                                        <form asp-action="CambiarEstadoDetallePedido" method="post" class="d-inline"
+                                              onsubmit="return confirm('¿Estás seguro de CANCELAR este ítem?');">
                                             <input type="hidden" name="idDetallePedido" value="@plato.IdPedido" />
                                             <input type="hidden" name="idMenu" value="@plato.IdMenu" />
                                             <input type="hidden" name="IdEstadoDetallePedido" value="5" />
@@ -139,13 +150,6 @@
                     <p class="fw-bold fs-5">Total: $@total.ToString("0.00")</p>
 
                 <!-- Botones de acción -->
-                <form asp-action="EnviarCocina" method="post" class="mb-2">
-                    <input type="hidden" name="idMesa" value="@mesa" />
-                    <button type="submit" class="btn btn-danger w-100">
-                        <i class="fas fa-rocket"></i> Enviar a Cocina
-                    </button>
-                </form>
-
                 <form asp-action="FinalizarOrden" method="post">
                     <input type="hidden" name="idMesa" value="@mesa" />
                     <button type="submit" class="btn btn-success w-100">
