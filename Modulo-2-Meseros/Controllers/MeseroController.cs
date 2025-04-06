@@ -328,9 +328,9 @@ namespace Modulo_2_Meseros.Controllers
         [HttpPost]
         public async Task<IActionResult> AgregarDetallePedido(int idMesa)
         {
-            // Obtener el pedido activo para la mesa
+            // 1. Buscar el pedido activo existente
             var pedidoExistente = await _context.Pedidos
-                .FirstOrDefaultAsync(p => p.IdMesa == idMesa);
+                .FirstOrDefaultAsync(p => p.IdMesa == idMesa && p.IdEstadopedido == 2); // Estado 2 = Activo
 
             if (pedidoExistente == null)
             {
@@ -338,7 +338,7 @@ namespace Modulo_2_Meseros.Controllers
                 return RedirectToAction("PreDetallePedido", new { idMesa });
             }
 
-            // Obtener los items temporales
+            // 2. Obtener items temporales de la sesión
             var itemsTemporales = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido);
             if (itemsTemporales == null || !itemsTemporales.Any())
             {
@@ -346,28 +346,78 @@ namespace Modulo_2_Meseros.Controllers
                 return RedirectToAction("PreDetallePedido", new { idMesa });
             }
 
-            foreach (var item in itemsTemporales)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                var detalle = new DetallePedido
+                foreach (var item in itemsTemporales)
                 {
-                    IdPedido = pedidoExistente.IdPedido, // ✅ Esto es lo importante
-                    IdMenu = item.IdMenu,
-                    DetCantidad = item.Cantidad,
-                    DetComentarios = item.Comentarios ?? "", // Evita nulos
-                    DetPrecio = item.Subtotal // Asegúrate que cantidad no sea 0
-                };
-                detalle.IdEstadopedido = 1;
-                _context.DetallePedidos.Add(detalle);
+                    // Verificar si ya existe este item en el pedido
+                    var detalleExistente = await _context.DetallePedidos
+                        .FirstOrDefaultAsync(d =>
+                            d.IdPedido == pedidoExistente.IdPedido &&
+                            d.IdMenu == item.IdMenu);
+
+                    if (detalleExistente != null && detalleExistente.IdEstadopedido == 1)
+                    {
+                        // ACTUALIZAR (si está en estado 1 = Solicitado)
+                        detalleExistente.DetCantidad += item.Cantidad;
+                        detalleExistente.DetSubtotal = detalleExistente.DetCantidad * detalleExistente.DetPrecio;
+
+                        if (!string.IsNullOrEmpty(item.Comentarios))
+                        {
+                            detalleExistente.DetComentarios = item.Comentarios;
+                        }
+                    }
+                    else
+                    {
+                        // INSERTAR NUEVO DETALLE
+                        // Consultar precio desde la base de datos
+                        var precio = await ObtenerPrecioMenuItem(item.IdMenu);
+
+                        var nuevoDetalle = new DetallePedido
+                        {
+                            IdPedido = pedidoExistente.IdPedido,
+                            IdMenu = item.IdMenu,
+                            DetCantidad = item.Cantidad,
+                            DetPrecio = precio,
+                            DetSubtotal = item.Cantidad * precio,
+                            DetComentarios = item.Comentarios ?? string.Empty,
+                            IdEstadopedido = 1 // Estado 1 = Solicitado
+                        };
+                        _context.DetallePedidos.Add(nuevoDetalle);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                HttpContext.Session.Remove(SessionPedido);
+                TempData["Success"] = "¡Platos agregados al pedido exitosamente!";
+                return RedirectToAction("VerDetallePedido", new { idMesa });
             }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                TempData["Error"] = $"Error al procesar el pedido: {ex.Message}";
+                return RedirectToAction("PreDetallePedido", new { idMesa });
+            }
+        }
 
+        // Método auxiliar para obtener precio
+        private async Task<decimal> ObtenerPrecioMenuItem(int idMenu)
+        {
+            var menuItem = await _context.MenuItems
+                .Include(mi => mi.Platos)
+                .Include(mi => mi.Combo)
+                .FirstOrDefaultAsync(mi => mi.MenuItemId == idMenu);
 
-            await _context.SaveChangesAsync();
+            if (menuItem?.Platos != null)
+                return menuItem.Platos.Precio;
 
-            // Limpiar sesión temporal
-            HttpContext.Session.Remove("PedidoTemporal_" + idMesa);
+            if (menuItem?.Combo != null)
+                return menuItem.Combo.Precio;
 
-            TempData["Success"] = "¡Pedido enviado a cocina exitosamente!";
-            return RedirectToAction("EstadoMesas");
+            throw new Exception("No se pudo determinar el precio del ítem del menú");
         }
 
 
