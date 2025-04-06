@@ -49,9 +49,10 @@ namespace Modulo_2_Meseros.Controllers
         }
 
         //[Authorize(Roles = "Mesero")]
-        public async Task<IActionResult> VisualizarMenuOnlyPlatos(int idMesa)
+        public async Task<IActionResult> VisualizarMenuOnlyPlatos(int idMesa, bool? esNuevo)
         {
             ViewBag.IdMesa = idMesa;
+            ViewBag.EsNuevo = esNuevo;
             try
             {
                 // Consulta con join para obtener el nombre de la categoría
@@ -371,21 +372,22 @@ namespace Modulo_2_Meseros.Controllers
         private const string SessionPedido = "PedidoTemporal";
 
         // GET
-        public IActionResult PreDetallePedido(int idMesa)
+        public IActionResult PreDetallePedido(int idMesa, bool? esNuevo)
         {
             var pedidoTemporal = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido) ?? new List<PedidoTemporalItem>();
             ViewBag.IdMesa = idMesa;
+            ViewBag.EsNuevo = esNuevo; 
             return View(pedidoTemporal);
         }
 
         // POST para agregar plato (similar para combos/promos)
         [HttpPost]
-        public IActionResult AgregarItemTemporal(int idMesa, PedidoTemporalItem item)
+        public IActionResult AgregarItemTemporal(int idMesa, bool? esNuevo , PedidoTemporalItem item)
         {
             var pedidoTemporal = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido) ?? new List<PedidoTemporalItem>();
             pedidoTemporal.Add(item);
             HttpContext.Session.SetObjectAsJson(SessionPedido, pedidoTemporal);
-            return RedirectToAction("PreDetallePedido", new { idMesa });
+            return RedirectToAction("PreDetallePedido", new { idMesa, esNuevo });
         }
 
         // POST final: crear pedido y detallePedido real

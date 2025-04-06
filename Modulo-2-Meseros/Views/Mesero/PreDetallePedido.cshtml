@@ -18,6 +18,12 @@
             <li class="breadcrumb-item active" aria-current="page">📝 Preparando Pedido (Mesa #@mesa)</li>
         </ol>
     </nav>
+    @if (ViewBag.EsNuevo == true)
+    {
+        <div class="alert alert-primary">
+            🆕 Estás creando un nuevo pedido para la mesa #@ViewBag.IdMesa
+        </div>
+    }
 
     <!-- ALERTA DE TEMP DATA -->
     @if (TempData["Success"] != null)
@@ -73,7 +79,11 @@
 
     <!-- Acciones inferiores -->
     <div class="mt-4 d-flex flex-wrap gap-2">
-        <a asp-action="VisualizarMenuOnlyPlatos" asp-controller="Mesero" asp-route-idMesa="@ViewBag.IdMesa" class="btn btn-outline-primary">
+        <a asp-action="VisualizarMenuOnlyPlatos"
+           asp-controller="Mesero"
+           asp-route-idMesa="@ViewBag.IdMesa"
+           asp-route-esNuevo="@ViewBag.EsNuevo"
+           class="btn btn-outline-primary">
             🍽️ Añadir Plato
         </a>
         <a asp-action="VisualizarMenuOnlyCombos" asp-controller="Mesero" asp-route-idMesa="@ViewBag.IdMesa" class="btn btn-outline-secondary">
