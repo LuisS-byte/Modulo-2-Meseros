@@ -18,7 +18,7 @@
         mesa = Model.FirstOrDefault()?.IdPedidoNavigation?.IdMesa ?? 0;
         pedido = Model.FirstOrDefault()?.IdPedido ?? 0;
         mesero = Model.FirstOrDefault()?.IdPedidoNavigation?.IdMeseroNavigation?.Nombre ?? "Mesero";
-        total = Model.Sum(d => d.DetSubtotal ?? 0);
+        total = Model.Sum(d => d.DetPrecio ?? 0);
     }
 }
 
@@ -91,7 +91,7 @@
                                 </div>
 
                                 <div class="col-md-2">
-                                    $@plato.DetSubtotal?.ToString("0.00")
+                                    $@plato.DetPrecio?.ToString("0.00")
                                 </div>
 
                                 <div class="col-md-4 text-end">

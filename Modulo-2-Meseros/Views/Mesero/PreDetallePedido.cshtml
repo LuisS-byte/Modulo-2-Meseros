@@ -18,6 +18,12 @@
             <li class="breadcrumb-item active" aria-current="page">📝 Preparando Pedido (Mesa #@mesa)</li>
         </ol>
     </nav>
+    @if (ViewBag.EsNuevo == true)
+    {
+        <div class="alert alert-primary">
+            🆕 Estás creando un nuevo pedido para la mesa #@ViewBag.IdMesa
+        </div>
+    }
 
     <!-- ALERTA DE TEMP DATA -->
     @if (TempData["Success"] != null)
@@ -53,7 +59,7 @@
                     </div>
 
                     <!-- Botón eliminar -->
-                    <form asp-action="EliminarItemTemporal" asp-route-idMenu="@item.IdMenu" method="post" class="ms-3">
+                    <form asp-action="EliminarItemTemporal" asp-route-idMenu="@item.MenuItemId" method="post" class="ms-3">
                         <input type="hidden" name="idMesa" value="@mesa" />
                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar">
                             🗑️
@@ -63,23 +69,34 @@
             </div>
         }
 
-        <form asp-action="EnviarPedido" method="post" class="mt-4">
+        <form asp-action="@(ViewBag.EsNuevo == true ? "AgregarPedido" : "AgregarDetallePedido")"
+              asp-controller="Mesero"
+              method="post"
+              class="mt-4">
             <input type="hidden" name="idMesa" value="@mesa" />
             <button type="submit" class="btn btn-danger w-100 fs-5">
                 🚀 Enviar a Cocina
             </button>
         </form>
+
+
     }
 
     <!-- Acciones inferiores -->
     <div class="mt-4 d-flex flex-wrap gap-2">
-        <a asp-action="VisualizarMenuOnlyPlatos" asp-controller="Mesero" asp-route-idMesa="@ViewBag.IdMesa" class="btn btn-outline-primary">
+        <a asp-action="VisualizarMenuOnlyPlatos"
+           asp-controller="Mesero"
+           asp-route-idMesa="@ViewBag.IdMesa"
+           asp-route-esNuevo="@ViewBag.EsNuevo"
+           class="btn btn-outline-primary">
             🍽️ Añadir Plato
         </a>
-        <a asp-action="VisualizarMenuOnlyCombos" asp-controller="Mesero" asp-route-idMesa="@ViewBag.IdMesa" class="btn btn-outline-secondary">
+        <a asp-action="VisualizarMenuOnlyCombos" asp-controller="Mesero" asp-route-idMesa="@ViewBag.IdMesa"
+           asp-route-esNuevo="@ViewBag.EsNuevo" class="btn btn-outline-secondary">
             🧺 Añadir Combo
         </a>
-        <a asp-action="VisualizarMenuOnlyPromociones" asp-controller="Mesero" asp-route-idMesa="@ViewBag.IdMesa" class="btn btn-outline-info">
+        <a asp-action="VisualizarMenuOnlyPromociones" asp-controller="Mesero" asp-route-idMesa="@ViewBag.IdMesa"
+           asp-route-esNuevo="@ViewBag.EsNuevo" class="btn btn-outline-info">
             🔖 Añadir Promoción
         </a>
         <form asp-action="CancelarPreparacion" method="post" onsubmit="return confirm('¿Cancelar y vaciar el pedido temporal?')" class="d-inline">

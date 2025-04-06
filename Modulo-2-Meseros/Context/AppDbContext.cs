@@ -17,6 +17,7 @@ public partial class AppDbContext : DbContext
     }
 
     public virtual DbSet<Categorias> Categorias { get; set; }
+    
 
     public virtual DbSet<Combo> Combos { get; set; }
 
