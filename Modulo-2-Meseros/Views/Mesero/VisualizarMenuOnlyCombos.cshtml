@@ -2,8 +2,8 @@
 
 @{
     ViewData["Title"] = "Menú de Combos";
+
     Layout = "~/Views/Shared/_LayautMenu.cshtml";
-    var estaOcupada = TempData["EstaOcupada"] as bool?;
 }
 
 <link rel="stylesheet" href="~/css/menu-combos.css" />
@@ -44,20 +44,19 @@
         $(document).ready(function () {
             // Almacenar todos los datos de combos
             var todosLosCombos = [];
-            var estaOcupada = @(Json.Serialize(estaOcupada)); // Obtener el valor del TempData
 
-        @foreach (var item in Model)
-        {
-            <text>
-                        todosLosCombos.push({
-                            comboId: '@item.ComboId',
-                            nombre: '@Html.Raw(item.NombreCombo?.Replace("'", "\\'"))',
-                            precio: '@item.Precio',
-                            descripcion: '@Html.Raw(item.Descripcion?.Replace("'", "\\'") ?? "Sin descripción disponible")',
-                            imagenURL: '@Html.Raw(item.ImagenURL?.Replace("'", "\\'"))'
-                        });
-            </text>
-        }
+            @foreach (var item in Model)
+            {
+                <text>
+                    todosLosCombos.push({
+                        comboId: '@item.ComboId',
+                        nombre: '@Html.Raw(item.NombreCombo?.Replace("'", "\\'"))',
+                        precio: '@item.Precio',
+                        descripcion: '@Html.Raw(item.Descripcion?.Replace("'", "\\'") ?? "Sin descripción disponible")',
+                        imagenURL: '@Html.Raw(item.ImagenURL?.Replace("'", "\\'"))'
+                    });
+                </text>
+            }
 
             // Configuración de paginación
             var elementosPorPagina = 6;
@@ -82,17 +81,18 @@
                                 <h3 class="combo-title">${combo.nombre}</h3>
                                 <p class="combo-price">$${parseFloat(combo.precio).toFixed(2)}</p>
                                 <p class="combo-description">${combo.descripcion}</p>
-                                <form method="post" action="/Mesero/AgregarItemTemporal">
-                                    <input type="hidden" name="idMesa" value="@ViewBag.IdMesa" />
-                                    <input type="hidden" name="estaOcupada" value="${estaOcupada}" />
-                                    <input type="hidden" name="item.IdMenu" value="${combo.comboId}" />
-                                    <input type="hidden" name="item.Nombre" value="${combo.nombre}" />
-                                    <input type="hidden" name="item.Cantidad" value="1" />
-                                    <input type="hidden" name="item.Precio" value="${combo.precio}" />
-                                    <input type="hidden" name="item.Comentarios" value="" />
-                                    <input type="hidden" name="item.TipoItem" value="Combo" />
-                                    <button type="submit" class="btn-add">Añadir</button>
-                                </form>
+                       <form method="post" action="/Mesero/AgregarItemTemporal">
+                                     <input type="hidden" name="idMesa" value="@ViewBag.IdMesa" />
+                         <input type="hidden" name="item.IdMenu" value="${combo.comboId}" />
+                         <input type="hidden" name="item.Nombre" value="${combo.nombre}" />
+                        <input type="hidden" name="item.Cantidad" value="1" />
+                        <input type="hidden" name="item.Precio" value="${combo.precio}" />
+                        <input type="hidden" name="item.Comentarios" value="" />
+                         <input type="hidden" name="item.TipoItem" value="Combo" />
+                        <button type="submit" class="btn-add">Añadir</button>
+                         </form>
+                               
+                        
                             </div>
                         </div>
                     `;
@@ -114,7 +114,7 @@
                 });
 
                 paginaActual = 1;
-
+                
                 // Verificar si ya se cargaron todos los combos
                 if (cantidadCargar >= todosLosCombos.length) {
                     todosLosCombosCargados = true;
@@ -147,7 +147,7 @@
                         });
 
                         paginaActual++;
-
+                        
                         // Verificar si ya se cargaron todos los combos
                         if (fin >= todosLosCombos.length) {
                             todosLosCombosCargados = true;
@@ -158,7 +158,7 @@
 
                     cargando = false;
                     $('#loading-spinner').hide();
-
+                    
                     // Verificar nuevamente si es necesario cargar más combos
                     checkScrollPosition();
                 }, 500);
@@ -172,11 +172,11 @@
                 var winHeight = $(window).height();
                 // Posición actual del scroll
                 var scrollTop = $(window).scrollTop();
-
+                
                 // Calcular si estamos cerca del final o si el contenido no llena la página
                 var isNearBottom = scrollTop + winHeight > docHeight - 200;
                 var contentTooShort = docHeight <= winHeight + 100;
-
+                
                 // Si estamos cerca del final o el contenido es muy corto y hay más combos para cargar
                 if ((isNearBottom || contentTooShort) && !todosLosCombosCargados && !cargando) {
                     cargarMasCombos();
@@ -189,7 +189,7 @@
                 if (scrollTimeout) clearTimeout(scrollTimeout);
                 scrollTimeout = setTimeout(checkScrollPosition, 100);
             });
-
+            
             // También verificar cuando se redimensiona la ventana
             $(window).resize(function() {
                 if (!cargando) {

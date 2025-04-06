@@ -8,6 +8,7 @@
         public decimal Precio { get; set; }
         public string Comentarios { get; set; } = string.Empty;
         public string TipoItem { get; set; } = "Plato"; // Plato, Combo o Promo
+        public int IdEstadoPedido { get; set; } = 1; // Valor por defecto (1 = Solicitado)
         public decimal Subtotal => Cantidad * Precio;
     }
 }

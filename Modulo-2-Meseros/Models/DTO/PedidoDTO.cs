@@ -2,6 +2,7 @@
 {
     public class PedidoDTO
     {
+        public int IdPedido { get; set; }
 
         public int? IdMesa { get; set; }
 

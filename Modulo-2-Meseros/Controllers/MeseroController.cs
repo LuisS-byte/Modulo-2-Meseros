@@ -185,73 +185,77 @@ namespace Modulo_2_Meseros.Controllers
             return View();
         }
 
+        // [Authorize(Roles = "Mesero")]
         [HttpPost]
         public async Task<IActionResult> AgregarPedido([FromForm] PedidoCreacion request)
         {
-            if (request?.Pedido == null || request.DetallePedido == null)
-            {
-                return BadRequest("Datos de pedido incompletos");
-            }
-
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 1. Validar mesa
                 var mesa = await _context.Mesas.FindAsync(request.Pedido.IdMesa.Value);
                 if (mesa == null) return NotFound("Mesa no encontrada.");
-                if (mesa.Estado==true) return BadRequest("La mesa ya está ocupada.");
 
-                // 2. Crear pedido SIN especificar IdPedido
+                if (mesa.Estado == true)
+                    return BadRequest("La mesa ya está ocupada.");
+
+                mesa.Estado = true;
+
                 var pedido = new Pedido
                 {
-                    // NO incluir IdPedido aquí
                     IdMesa = request.Pedido.IdMesa.Value,
                     IdMesero = request.Pedido.EmpleadoID.Value,
                     IdEstadopedido = request.Pedido.IdEstadopedido.Value
                 };
 
                 _context.Pedidos.Add(pedido);
-                await _context.SaveChangesAsync(); // Esto generará el ID automáticamente
+                await _context.SaveChangesAsync();
 
-                // 3. Obtener precio del ítem
                 var menuItem = await _context.MenuItems
-                    .Include(mi => mi.Platos)
-                    .Include(mi => mi.Combo)
                     .FirstOrDefaultAsync(mi => mi.MenuItemId == request.DetallePedido.IdMenu);
 
                 if (menuItem == null)
                 {
                     await transaction.RollbackAsync();
-                    return BadRequest("Ítem del menú no encontrado");
+                    return BadRequest($"El MenuItemId {request.DetallePedido.IdMenu} no existe.");
                 }
 
-                decimal precio = menuItem.Platos?.Precio ?? menuItem.Combo?.Precio ?? 0;
+                decimal precio = 0;
+                if (menuItem.PlatoId.HasValue)
+                {
+                    precio = await _context.Platos
+                        .Where(p => p.PlatoId == menuItem.PlatoId.Value)
+                        .Select(p => p.Precio)
+                        .FirstOrDefaultAsync();
+                }
+                else if (menuItem.ComboId.HasValue)
+                {
+                    precio = await _context.Combos
+                        .Where(c => c.ComboId == menuItem.ComboId.Value)
+                        .Select(c => c.Precio)
+                        .FirstOrDefaultAsync();
+                }
 
-                // 4. Crear detalle
                 var detalle = new DetallePedido
                 {
+                    IdPedido = pedido.IdPedido,
                     IdMenu = request.DetallePedido.IdMenu,
-                    DetCantidad = request.DetallePedido.DetCantidad ?? 1,
+                    DetCantidad = request.DetallePedido.DetCantidad.Value,
                     DetPrecio = precio,
-                    DetSubtotal = (request.DetallePedido.DetCantidad ?? 1) * precio,
+                    DetSubtotal = request.DetallePedido.DetCantidad.Value * precio,
                     DetComentarios = request.DetallePedido.DetComentarios ?? string.Empty,
                     IdEstadopedido = request.DetallePedido.IdEstadopedido.Value
                 };
 
                 _context.DetallePedidos.Add(detalle);
-
-                // 5. Actualizar mesa
-                mesa.Estado = true;
-                _context.Mesas.Update(mesa);
-
                 await _context.SaveChangesAsync();
+
                 await transaction.CommitAsync();
 
                 return Ok(new PedidoResponseDTO
                 {
                     IdPedido = pedido.IdPedido,
-                    IdMesa = pedido.IdMesa.Value,
-                    IdMesero = pedido.IdMesero.Value,
+                    IdMesa = (int)pedido.IdMesa,
+                    IdMesero = (int)pedido.IdMesero,
                     Detalle = new DetallePedidoResponseDTO
                     {
                         IdMenu = detalle.IdMenu,
@@ -263,18 +267,29 @@ namespace Modulo_2_Meseros.Controllers
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                return StatusCode(500, new { mensaje = "Error interno al procesar el pedido" });
+                if (transaction.GetDbTransaction().Connection != null)
+                {
+                    await transaction.RollbackAsync();
+                }
+
+                return StatusCode(500, new
+                {
+                    mensaje = "Error al crear el pedido.",
+                    error = ex.Message,
+                    innerError = ex.InnerException?.Message,
+                    stackTrace = ex.StackTrace
+                });
             }
         }
 
         //[Authorize(Roles = "Mesero")]
+        [HttpGet]
         public async Task<IActionResult> VerDetallePedido(int idMesa, bool nuevoPedido)
         {
             if (nuevoPedido)
             {
                 
-            return View("DetallePedidoView",    null);
+            return View("DetallePedidoView", null);
             }
 
             var pedidoActivo = await _context.Pedidos
@@ -328,15 +343,29 @@ namespace Modulo_2_Meseros.Controllers
 
         //[Authorize(Roles = "Mesero")]   
         [HttpPost]
-        public async Task<IActionResult> CambiarEstadoDetallePedido(int idDetallePedido, int IdEstadoDetallePedido)
+        public async Task<IActionResult> CambiarEstadoDetallePedido(int idDetallePedido, int idMenu, int IdEstadoDetallePedido)
         {
-            var pedido = await _context.Pedidos.FirstOrDefaultAsync(x => x.IdPedido == idDetallePedido);
-            if (pedido == null) return NotFound();
+            var detalle = await _context.DetallePedidos
+                 .Include(dp => dp.IdPedidoNavigation)
+                 .FirstOrDefaultAsync(dp => dp.IdPedido == idDetallePedido && dp.IdMenu == idMenu);
 
-            pedido.IdEstadopedido = IdEstadoDetallePedido;
+
+
+            if (detalle == null)
+                return NotFound();
+
+            // Regla: no se puede cancelar si está en Proceso o Finalizado
+            if (IdEstadoDetallePedido == 5 &&
+                (detalle.IdEstadopedido == 2 || detalle.IdEstadopedido == 3))
+            {
+                TempData["Error"] = "No se puede cancelar un plato en proceso o finalizado.";
+                return RedirectToAction("VerDetallePedido", new { idMesa = detalle.IdPedidoNavigation.IdMesa});
+            }
+
+            detalle.IdEstadopedido = IdEstadoDetallePedido;
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("VerDetallePedido", new { idMesa = pedido.IdMesa });
+            return RedirectToAction("VerDetallePedido", new { idMesa = detalle.IdPedidoNavigation.IdMesa});
         }
 
         private const string SessionPedido = "PedidoTemporal";
@@ -374,6 +403,7 @@ namespace Modulo_2_Meseros.Controllers
             return RedirectToAction("VerDetallePedido", new { idMesa });
         }
 
+        //
         [HttpPost]
         public async Task<IActionResult> EnviarPedido(int idMesa)
         {
@@ -383,14 +413,14 @@ namespace Modulo_2_Meseros.Controllers
                 TempData["Error"] = "No hay elementos para enviar.";
                 return RedirectToAction("PreDetallePedido", new { idMesa });
             }
-
+            Console.WriteLine(pedidoTemporal);
             // Crear el Pedido
             var pedido = new Pedido
             {
                 IdMesa = idMesa,
                 IdEstadopedido = 2, // En Proceso
-                IdMesero = HttpContext.Session.GetInt32("IdMesero") ?? 0, // Tu lógica aquí
-                                                      // FechaPedido = DateTime.Now, si tienes el campo
+                IdMesero = HttpContext.Session.GetInt32("IdMesero") ?? 1, // Tu lógica aquí
+                                                      
             };
 
             _context.Pedidos.Add(pedido);
@@ -399,16 +429,17 @@ namespace Modulo_2_Meseros.Controllers
             // Insertar los detalles
             foreach (var item in pedidoTemporal)
             {
-                _context.DetallePedidos.Add(new DetallePedido
+                var detalle = new DetallePedido
                 {
                     IdPedido = pedido.IdPedido,
                     IdMenu = item.IdMenu,
                     DetCantidad = item.Cantidad,
                     DetPrecio = item.Precio,
-                    DetSubtotal = item.Subtotal,
+                    DetSubtotal = item.Cantidad * item.Precio, // Puedes calcularlo aquí o usar item.Subtotal
                     DetComentarios = item.Comentarios,
-                    IdEstadopedido = 1 // Solicitado
-                });
+                    IdEstadopedido = item.IdEstadoPedido
+                };
+                _context.DetallePedidos.Add(detalle);
             }
 
             await _context.SaveChangesAsync();

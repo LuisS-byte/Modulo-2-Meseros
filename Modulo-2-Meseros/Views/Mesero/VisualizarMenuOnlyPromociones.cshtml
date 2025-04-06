@@ -2,8 +2,7 @@
 
 @{
     ViewData["Title"] = "Promociones Disponibles";
-    Layout = "~/Views/Shared/_LayautMenu.cshtml";
-    var estaOcupada = TempData["EstaOcupada"] as bool?;
+    @* Layout = "~/Views/Shared/_Layout.cshtml"; *@
 }
 
 <link rel="stylesheet" href="~/css/menu-promociones.css" />
@@ -34,10 +33,7 @@
         $(document).ready(function () {
             // Mostrar spinner mientras cargamos
             $('#loading-spinner').show();
-
-            // Obtener el estado de ocupación de la mesa
-            var estaOcupada = @(Json.Serialize(estaOcupada));
-
+            
             // Realizar la solicitud para obtener las promociones
             $.ajax({
                 url: '@Url.Action("VisualizarMenuOnlyPromociones", "Mesero")',
@@ -58,7 +54,7 @@
                     $('#loading-spinner').hide();
                 }
             });
-
+            
             // Función para mostrar mensaje cuando no hay promociones
             function mostrarMensajeVacio() {
                 $('#promociones-container').html(`
@@ -67,7 +63,7 @@
                     </div>
                 `);
             }
-
+            
             // Función para mostrar mensaje de error
             function mostrarError(mensaje) {
                 $('#promociones-container').html(`
@@ -76,15 +72,15 @@
                     </div>
                 `);
             }
-
+            
             // Función para renderizar las promociones
             function renderizarPromociones(promociones) {
                 var promocionesHTML = '';
-
+                
                 promociones.forEach(function(promocion, index) {
                     var fechaInicio = new Date(promocion.fechaInicio).toLocaleDateString();
                     var fechaFin = new Date(promocion.fechaFin).toLocaleDateString();
-
+                    
                     promocionesHTML += `
                         <div class="promocion-card" style="animation-delay: ${index * 0.1}s">
                             <div class="promocion-header">
@@ -94,12 +90,12 @@
                             </div>
                             <div class="promocion-items">
                     `;
-
+                    
                     // Recorrer los items de la promoción
                     promocion.items.forEach(function(item) {
                         var precioOriginal = parseFloat(item.precioOriginal).toFixed(2);
                         var precioDescuento = parseFloat(item.precioConDescuento).toFixed(2);
-
+                        
                         promocionesHTML += `
                             <div class="item-card">
                                 <div class="item-info">
@@ -110,29 +106,29 @@
                                         <span class="price-discount">$${precioDescuento}</span>
                                     </div>
                                 </div>
-                                <form method="post" action="/Mesero/AgregarItemTemporal">
-                                    <input type="hidden" name="idMesa" value="@ViewBag.IdMesa" />
-                                    <input type="hidden" name="estaOcupada" value="${estaOcupada}" />
-                                    <input type="hidden" name="item.IdMenu" value="${item.id}" />
-                                    <input type="hidden" name="item.Nombre" value="${item.nombre}" />
-                                    <input type="hidden" name="item.Cantidad" value="1" />
-                                    <input type="hidden" name="item.Precio" value="${precioDescuento}" />
-                                    <input type="hidden" name="item.Comentarios" value="" />
-                                    <input type="hidden" name="item.TipoItem" value="Promocion" />
-                                    <button type="submit" class="btn-add">Añadir</button>
-                                </form>
+                              <form method="post" action="/Mesero/AgregarItemTemporal">
+                            <input type="hidden" name="idMesa" value="@ViewBag.IdMesa" />
+                             <input type="hidden" name="item.IdMenu" value="${item.id}" />
+                             <input type="hidden" name="item.Nombre" value="${item.nombre}" />
+                             <input type="hidden" name="item.Cantidad" value="1" />
+                                <input type="hidden" name="item.Precio" value="${precioDescuento}" />
+                             <input type="hidden" name="item.Comentarios" value="" />
+                             <input type="hidden" name="item.TipoItem" value="Promocion" />
+                                <button type="submit" class="btn-add">Añadir</button>
+                             </form>
+                               
                             </div>
                         `;
                     });
-
+                    
                     promocionesHTML += `
                             </div>
                         </div>
                     `;
                 });
-
+                
                 $('#promociones-container').html(promocionesHTML);
-
+                
                 // Manejar clic en botón añadir (delegación de eventos)
                 $(document).on('click', '.btn-add', function () {
                     var itemId = $(this).data('item-id');

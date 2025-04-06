@@ -3,7 +3,6 @@
 @{
     ViewData["Title"] = "Menú de Platos";
     Layout = "~/Views/Shared/_LayautMenu.cshtml";
-    var estaOcupada = TempData["EstaOcupada"] as bool?;
 }
 
 <link rel="stylesheet" href="~/css/menu-platos.css" />
@@ -44,21 +43,20 @@
         $(document).ready(function () {
             // Almacenar todos los datos de platos
             var todosLosPlatos = [];
-            var estaOcupada = @(Json.Serialize(estaOcupada)); // Obtener el valor del TempData
 
-        @foreach (var item in Model)
-        {
-            <text>
-                        todosLosPlatos.push({
-                            platoId: '@item.PlatoId',
-                            nombre: '@Html.Raw(item.NombrePlato?.Replace("'", "\\'"))',
-                            categoria: '@Html.Raw(item.NombreCategoria?.Replace("'", "\\'"))',
-                            precio: '@item.Precio',
-                            descripcion: '@Html.Raw(item.Descripcion?.Replace("'", "\\'") ?? "Sin descripción disponible")',
-                            imagenURL: '@Html.Raw(item.ImagenURL?.Replace("'", "\\'"))'
-                        });
-            </text>
-        }
+            @foreach (var item in Model)
+            {
+                <text>
+                    todosLosPlatos.push({
+                        platoId: '@item.PlatoId',
+                        nombre: '@Html.Raw(item.NombrePlato?.Replace("'", "\\'"))',
+                        categoria: '@Html.Raw(item.NombreCategoria?.Replace("'", "\\'"))',
+                        precio: '@item.Precio',
+                        descripcion: '@Html.Raw(item.Descripcion?.Replace("'", "\\'") ?? "Sin descripción disponible")',
+                        imagenURL: '@Html.Raw(item.ImagenURL?.Replace("'", "\\'"))'
+                    });
+                </text>
+            }
 
             // Configuración de paginación
             var elementosPorPagina = 6;
@@ -85,17 +83,17 @@
                                 <p class="plato-price">$${parseFloat(plato.precio).toFixed(2)}</p>
                                 <p class="plato-description">${plato.descripcion}</p>
 
-                                <form method="post" action="/Mesero/AgregarItemTemporal">
-                                    <input type="hidden" name="idMesa" value="@ViewBag.IdMesa" />
-                                    <input type="hidden" name="estaOcupada" value="${estaOcupada}" />
-                                    <input type="hidden" name="item.IdMenu" value="${plato.platoId}" />
-                                    <input type="hidden" name="item.Nombre" value="${plato.nombre}" />
-                                    <input type="hidden" name="item.Cantidad" value="1" />
-                                    <input type="hidden" name="item.Precio" value="${plato.precio}" />
-                                    <input type="hidden" name="item.Comentarios" value="" />
-                                    <input type="hidden" name="item.TipoItem" value="Plato" />
-                                    <button type="submit" class="btn-add">Añadir</button>
-                                </form>
+                         <form method="post" action="/Mesero/AgregarItemTemporal">
+                                     <input type="hidden" name="idMesa" value="@ViewBag.IdMesa" />
+                         <input type="hidden" name="item.IdMenu" value="${plato.platoId}" />
+                         <input type="hidden" name="item.Nombre" value="${plato.nombre}" />
+                        <input type="hidden" name="item.Cantidad" value="1" />
+                        <input type="hidden" name="item.Precio" value="${plato.precio}" />
+                        <input type="hidden" name="item.Comentarios" value="" />
+                         <input type="hidden" name="item.TipoItem" value="Plato" />
+                        <button type="submit" class="btn-add">Añadir</button>
+                         </form>
+
                             </div>
                         </div>
                     `;
@@ -117,7 +115,7 @@
                 });
 
                 paginaActual = 1;
-
+                
                 // Verificar si ya se cargaron todos los platos
                 if (cantidadCargar >= todosLosPlatos.length) {
                     todosLosPlatosCargados = true;
@@ -150,7 +148,7 @@
                         });
 
                         paginaActual++;
-
+                        
                         // Verificar si ya se cargaron todos los platos
                         if (fin >= todosLosPlatos.length) {
                             todosLosPlatosCargados = true;
@@ -161,7 +159,7 @@
 
                     cargando = false;
                     $('#loading-spinner').hide();
-
+                    
                     // Verificar nuevamente si es necesario cargar más platos
                     checkScrollPosition();
                 }, 500);
@@ -175,11 +173,11 @@
                 var winHeight = $(window).height();
                 // Posición actual del scroll
                 var scrollTop = $(window).scrollTop();
-
+                
                 // Calcular si estamos cerca del final o si el contenido no llena la página
                 var isNearBottom = scrollTop + winHeight > docHeight - 200;
                 var contentTooShort = docHeight <= winHeight + 100;
-
+                
                 // Si estamos cerca del final o el contenido es muy corto y hay más platos para cargar
                 if ((isNearBottom || contentTooShort) && !todosLosPlatosCargados && !cargando) {
                     cargarMasPlatos();
@@ -192,7 +190,7 @@
                 if (scrollTimeout) clearTimeout(scrollTimeout);
                 scrollTimeout = setTimeout(checkScrollPosition, 100);
             });
-
+            
             // También verificar cuando se redimensiona la ventana
             $(window).resize(function() {
                 if (!cargando) {

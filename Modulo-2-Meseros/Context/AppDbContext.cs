@@ -292,7 +292,7 @@ public partial class AppDbContext : DbContext
             entity.ToTable("PEDIDO");
 
             entity.Property(e => e.IdPedido)
-                .ValueGeneratedNever()
+                .ValueGeneratedOnAdd()
                 .HasColumnName("ID_PEDIDO");
             entity.Property(e => e.IdEstadopedido).HasColumnName("ID_ESTADOPEDIDO");
             entity.Property(e => e.IdMesa).HasColumnName("ID_MESA");
