@@ -32,12 +32,14 @@
                             <h3>Mesa #@mesa.NumeroMesa</h3>
                             <p>Capacidad: @mesa.Capacidad personas</p>
                             <p>Estado: <span class="estado-badge">@(mesa.Estado == true ? "Disponible" : "Ocupada")</span></p>
-                            <a href="@Url.Action("VerDetallePedido", "Mesero", new {
-                                    idMesa = mesa.MesaId,
-                                    nuevoPedido = (mesa.Estado == true)
-                                })" class="mesa-action">
+                            <a href="@Url.Action(
+                                 mesa.Estado == true ? "PreDetallePedido" : "VerDetallePedido",
+                                "Mesero",
+                                new { idMesa = mesa.MesaId })"
+                               class="mesa-action">
                                 @(mesa.Estado == true ? "Tomar Orden" : "Ver Orden")
                             </a>
+
                         </div>
                     </div>
                 </div>

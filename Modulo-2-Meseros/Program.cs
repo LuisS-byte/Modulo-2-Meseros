@@ -8,6 +8,10 @@ using Modulo_2_Meseros.Custom;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//services para la sessions.
+
+builder.Services.AddSession();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("CadenaSQL")));
@@ -42,6 +46,8 @@ builder.Services.AddAuthentication(options =>
 
 
 var app = builder.Build();
+//Habilitar sessions.
+app.UseSession();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

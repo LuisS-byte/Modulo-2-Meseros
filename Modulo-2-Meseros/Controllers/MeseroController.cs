@@ -7,6 +7,7 @@ using Modulo_2_Meseros.Context;
 using Modulo_2_Meseros.Models;
 using Microsoft.EntityFrameworkCore.Storage;
 using Modulo_2_Meseros.Models.DTO;
+using Modulo_2_Meseros.Custom;
 
 namespace Modulo_2_Meseros.Controllers
 {
@@ -349,10 +350,111 @@ namespace Modulo_2_Meseros.Controllers
             return RedirectToAction("VerDetallePedido", new { idMesa = pedido.IdMesa });
         }
 
-        public IActionResult DetallePedidoView()
-        {
+        private const string SessionPedido = "PedidoTemporal";
 
-            return View();
+        // GET
+        public IActionResult PreDetallePedido(int idMesa)
+        {
+            var pedidoTemporal = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido) ?? new List<PedidoTemporalItem>();
+            ViewBag.IdMesa = idMesa;
+            return View(pedidoTemporal);
         }
+
+        // POST para agregar plato (similar para combos/promos)
+        [HttpPost]
+        public IActionResult AgregarItemTemporal(int idMesa, PedidoTemporalItem item)
+        {
+            var pedidoTemporal = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido) ?? new List<PedidoTemporalItem>();
+            pedidoTemporal.Add(item);
+            HttpContext.Session.SetObjectAsJson(SessionPedido, pedidoTemporal);
+            return RedirectToAction("PreDetallePedido", new { idMesa });
+        }
+
+        // POST final: crear pedido y detallePedido real
+        [HttpPost]
+        public async Task<IActionResult> EnviarPedidoTemporal(int idMesa)
+        {
+            var pedidoTemporal = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido);
+            if (pedidoTemporal == null || !pedidoTemporal.Any())
+                return RedirectToAction("PreDetallePedido", new { idMesa });
+
+            // Crear pedido, luego detallePedido en la DB...
+            // (Podemos ayudarte a armarlo según tu estructura actual)
+
+            HttpContext.Session.Remove(SessionPedido); // Limpiar carrito
+            return RedirectToAction("VerDetallePedido", new { idMesa });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EnviarPedido(int idMesa)
+        {
+            var pedidoTemporal = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido);
+            if (pedidoTemporal == null || !pedidoTemporal.Any())
+            {
+                TempData["Error"] = "No hay elementos para enviar.";
+                return RedirectToAction("PreDetallePedido", new { idMesa });
+            }
+
+            // Crear el Pedido
+            var pedido = new Pedido
+            {
+                IdMesa = idMesa,
+                IdEstadopedido = 2, // En Proceso
+                IdMesero = HttpContext.Session.GetInt32("IdMesero") ?? 0, // Tu lógica aquí
+                                                      // FechaPedido = DateTime.Now, si tienes el campo
+            };
+
+            _context.Pedidos.Add(pedido);
+            await _context.SaveChangesAsync();
+
+            // Insertar los detalles
+            foreach (var item in pedidoTemporal)
+            {
+                _context.DetallePedidos.Add(new DetallePedido
+                {
+                    IdPedido = pedido.IdPedido,
+                    IdMenu = item.IdMenu,
+                    DetCantidad = item.Cantidad,
+                    DetPrecio = item.Precio,
+                    DetSubtotal = item.Subtotal,
+                    DetComentarios = item.Comentarios,
+                    IdEstadopedido = 1 // Solicitado
+                });
+            }
+
+            await _context.SaveChangesAsync();
+            HttpContext.Session.Remove(SessionPedido);
+
+            return RedirectToAction("VerDetallePedido", new { idMesa });
+        }
+
+
+        [HttpPost]
+        public IActionResult CancelarPreparacion()
+        {
+            HttpContext.Session.Remove("PedidoTemporal");
+            return RedirectToAction("EstadoMesas");
+        }
+        // Paso 1: Agregar un nuevo método en el controlador MeseroController
+
+        [HttpPost]
+        public IActionResult EliminarItemTemporal(int idMenu)
+        {
+            var pedidoTemporal = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido);
+
+            if (pedidoTemporal != null)
+            {
+                var item = pedidoTemporal.FirstOrDefault(x => x.IdMenu == idMenu);
+                if (item != null)
+                {
+                    pedidoTemporal.Remove(item);
+                    HttpContext.Session.SetObjectAsJson(SessionPedido, pedidoTemporal);
+                }
+            }
+
+            int idMesa = ViewBag.IdMesa ?? 0; // Alternativamente podrías pasarlo como parámetro si lo tienes en el form
+            return RedirectToAction("PreDetallePedido", new { idMesa });
+        }
+
     }
 }
