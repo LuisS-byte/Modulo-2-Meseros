@@ -1,10 +1,25 @@
 ﻿@model List<Modulo_2_Meseros.Models.DTO.PedidoTemporalItem>
 
 @{
+    TempData["EstaOcupada"] = Context.Request.Query["estaOcupada"].ToString() == "true";
     ViewData["Title"] = "Preparación de Pedido";
     var mesa = ViewBag.IdMesa;
 }
-
+@if (Context.Request.Query["estaOcupada"].ToString() == "false")
+{
+    <!-- Si la mesa está disponible, mostrar la vista de redirección -->
+    <partial name="_AgregarPedido" />
+}
+else
+{
+    <!-- Si la mesa está ocupada, mantener el formulario actual -->
+    <form asp-action="EnviarPedido" method="post" class="mt-4">
+        <input type="hidden" name="idMesa" value="@mesa" />
+        <button type="submit" class="btn btn-danger w-100 fs-5">
+            🚀 Enviar a Cocina
+        </button>
+    </form>
+}
 <link rel="stylesheet" href="~/css/detalle-pedido.css" />
 
 <div class="container mt-4">
@@ -65,6 +80,7 @@
 
         <form asp-action="EnviarPedido" method="post" class="mt-4">
             <input type="hidden" name="idMesa" value="@mesa" />
+            <input type="hidden" name="esNuevoPedido" value="@(Context.Request.Query["estaOcupada"].ToString() == "false" ? "true" : "false")" />
             <button type="submit" class="btn btn-danger w-100 fs-5">
                 🚀 Enviar a Cocina
             </button>
@@ -73,13 +89,13 @@
 
     <!-- Acciones inferiores -->
     <div class="mt-4 d-flex flex-wrap gap-2">
-        <a asp-action="VisualizarMenuOnlyPlatos" asp-controller="Mesero" asp-route-idMesa="@ViewBag.IdMesa" class="btn btn-outline-primary">
+        <a asp-route-estaOcupada="@TempData["EstaOcupada"]" asp-action="VisualizarMenuOnlyPlatos" asp-controller="Mesero" asp-route-idMesa="@ViewBag.IdMesa" class="btn btn-outline-primary">
             🍽️ Añadir Plato
         </a>
         <a asp-action="VisualizarMenuOnlyCombos" asp-controller="Mesero" asp-route-idMesa="@ViewBag.IdMesa" class="btn btn-outline-secondary">
             🧺 Añadir Combo
         </a>
-        <a asp-action="VisualizarMenuOnlyPromociones" asp-controller="Mesero" asp-route-idMesa="@ViewBag.IdMesa" class="btn btn-outline-info">
+        <a asp-route-estaOcupada="@TempData["EstaOcupada"]" asp-action="VisualizarMenuOnlyPromociones" asp-controller="Mesero" asp-route-idMesa="@ViewBag.IdMesa" class="btn btn-outline-info">
             🔖 Añadir Promoción
         </a>
         <form asp-action="CancelarPreparacion" method="post" onsubmit="return confirm('¿Cancelar y vaciar el pedido temporal?')" class="d-inline">

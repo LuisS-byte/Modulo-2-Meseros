@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Modulo_2_Meseros.Models;
 
 public partial class Pedido
 {
+    [Key]
     public int IdPedido { get; set; }
 
     public int? IdMesa { get; set; }
