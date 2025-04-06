@@ -192,6 +192,7 @@ namespace Modulo_2_Meseros.Controllers
         [HttpPost]
         public async Task<IActionResult> AgregarPedido([FromForm] PedidoCreacion request)
         {
+
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
@@ -328,9 +329,9 @@ namespace Modulo_2_Meseros.Controllers
         [HttpPost]
         public async Task<IActionResult> AgregarDetallePedido(int idMesa)
         {
-            // 1. Buscar el pedido activo existente
+            // 1. Buscar pedido existente
             var pedidoExistente = await _context.Pedidos
-                .FirstOrDefaultAsync(p => p.IdMesa == idMesa && p.IdEstadopedido == 2); // Estado 2 = Activo
+                .FirstOrDefaultAsync(p => p.IdMesa == idMesa && p.IdEstadopedido == 2);
 
             if (pedidoExistente == null)
             {
@@ -338,7 +339,7 @@ namespace Modulo_2_Meseros.Controllers
                 return RedirectToAction("PreDetallePedido", new { idMesa });
             }
 
-            // 2. Obtener items temporales de la sesión
+            // 2. Obtener items temporales
             var itemsTemporales = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido);
             if (itemsTemporales == null || !itemsTemporales.Any())
             {
@@ -351,17 +352,42 @@ namespace Modulo_2_Meseros.Controllers
             {
                 foreach (var item in itemsTemporales)
                 {
-                    // Verificar si ya existe este item en el pedido
+                    // 3. Obtener información completa del MenuItem
+                    var menuItem = await _context.MenuItems
+                        .Include(mi => mi.Platos)
+                        .Include(mi => mi.Combo)
+                        .Include(mi => mi.Promocion)
+                        .FirstOrDefaultAsync(mi => mi.MenuItemId == item.MenuItemId);
+
+                    if (menuItem == null) continue;
+
+                    // 4. Determinar precio según el tipo de ítem
+                    decimal precio = 0;
+                    if (menuItem.Platos != null)
+                    {
+                        precio = menuItem.Platos.Precio;
+                    }
+                    else if (menuItem.Combo != null)
+                    {
+                        precio = menuItem.Combo.Precio;
+                    }
+                    else if (menuItem.Promocion != null)
+                    {
+                        precio = menuItem.Promocion.Descuento;
+                    }
+
+                    // 5. Buscar detalle existente del MISMO MenuItemId
                     var detalleExistente = await _context.DetallePedidos
                         .FirstOrDefaultAsync(d =>
                             d.IdPedido == pedidoExistente.IdPedido &&
-                            d.IdMenu == item.IdMenu);
+                            d.IdMenu == item.MenuItemId &&
+                            d.IdEstadopedido == 1);
 
-                    if (detalleExistente != null && detalleExistente.IdEstadopedido == 1)
+                    if (detalleExistente != null)
                     {
-                        // ACTUALIZAR (si está en estado 1 = Solicitado)
+                        // 6. Actualizar detalle existente
                         detalleExistente.DetCantidad += item.Cantidad;
-                        detalleExistente.DetSubtotal = detalleExistente.DetCantidad * detalleExistente.DetPrecio;
+                        detalleExistente.DetSubtotal = detalleExistente.DetCantidad * precio;
 
                         if (!string.IsNullOrEmpty(item.Comentarios))
                         {
@@ -370,19 +396,16 @@ namespace Modulo_2_Meseros.Controllers
                     }
                     else
                     {
-                        // INSERTAR NUEVO DETALLE
-                        // Consultar precio desde la base de datos
-                        var precio = await ObtenerPrecioMenuItem(item.IdMenu);
-
+                        // 7. Crear nuevo detalle
                         var nuevoDetalle = new DetallePedido
                         {
                             IdPedido = pedidoExistente.IdPedido,
-                            IdMenu = item.IdMenu,
+                            IdMenu = item.MenuItemId,
                             DetCantidad = item.Cantidad,
                             DetPrecio = precio,
                             DetSubtotal = item.Cantidad * precio,
                             DetComentarios = item.Comentarios ?? string.Empty,
-                            IdEstadopedido = 1 // Estado 1 = Solicitado
+                            IdEstadopedido = 1
                         };
                         _context.DetallePedidos.Add(nuevoDetalle);
                     }
@@ -391,8 +414,9 @@ namespace Modulo_2_Meseros.Controllers
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
+                // 8. Limpiar sesión temporal
                 HttpContext.Session.Remove(SessionPedido);
-                TempData["Success"] = "¡Platos agregados al pedido exitosamente!";
+                TempData["Success"] = "¡Ítems agregados al pedido exitosamente!";
                 return RedirectToAction("VerDetallePedido", new { idMesa });
             }
             catch (Exception ex)
@@ -401,23 +425,6 @@ namespace Modulo_2_Meseros.Controllers
                 TempData["Error"] = $"Error al procesar el pedido: {ex.Message}";
                 return RedirectToAction("PreDetallePedido", new { idMesa });
             }
-        }
-
-        // Método auxiliar para obtener precio
-        private async Task<decimal> ObtenerPrecioMenuItem(int idMenu)
-        {
-            var menuItem = await _context.MenuItems
-                .Include(mi => mi.Platos)
-                .Include(mi => mi.Combo)
-                .FirstOrDefaultAsync(mi => mi.MenuItemId == idMenu);
-
-            if (menuItem?.Platos != null)
-                return menuItem.Platos.Precio;
-
-            if (menuItem?.Combo != null)
-                return menuItem.Combo.Precio;
-
-            throw new Exception("No se pudo determinar el precio del ítem del menú");
         }
 
 
@@ -463,6 +470,21 @@ namespace Modulo_2_Meseros.Controllers
         [HttpPost]
         public IActionResult AgregarItemTemporal(int idMesa, bool? esNuevo , PedidoTemporalItem item)
         {
+            if (item.PlatoId != 0)
+            {
+                var menuitens = _context.MenuItems.Where(x => x.PlatoId == item.PlatoId).ToList();
+                item.MenuItemId = menuitens.FirstOrDefault().MenuItemId;
+            }
+            if (item.ComboId != 0)
+            {
+                var menuitens = _context.MenuItems.Where(x => x.ComboId == item.ComboId).ToList();
+                item.MenuItemId = menuitens.FirstOrDefault().MenuItemId;
+            }
+            if (item.PromocionId != 0)
+            {
+                var menuitens = _context.MenuItems.Where(x => x.PromocionId == item.PromocionId).ToList();
+                item.MenuItemId = menuitens.FirstOrDefault().MenuItemId;
+            }
             var pedidoTemporal = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido) ?? new List<PedidoTemporalItem>();
             pedidoTemporal.Add(item);
             HttpContext.Session.SetObjectAsJson(SessionPedido, pedidoTemporal);
@@ -513,7 +535,7 @@ namespace Modulo_2_Meseros.Controllers
                 var detalle = new DetallePedido
                 {
                     IdPedido = pedido.IdPedido,
-                    IdMenu = item.IdMenu,
+                    IdMenu = item.MenuItemId,
                     DetCantidad = item.Cantidad,
                     DetPrecio = item.Precio,
                     DetSubtotal = item.Cantidad * item.Precio, // Puedes calcularlo aquí o usar item.Subtotal
@@ -545,7 +567,7 @@ namespace Modulo_2_Meseros.Controllers
 
             if (pedidoTemporal != null)
             {
-                var item = pedidoTemporal.FirstOrDefault(x => x.IdMenu == idMenu);
+                var item = pedidoTemporal.FirstOrDefault(x => x.MenuItemId == idMenu);
                 if (item != null)
                 {
                     pedidoTemporal.Remove(item);

@@ -59,7 +59,7 @@
                     </div>
 
                     <!-- Botón eliminar -->
-                    <form asp-action="EliminarItemTemporal" asp-route-idMenu="@item.IdMenu" method="post" class="ms-3">
+                    <form asp-action="EliminarItemTemporal" asp-route-idMenu="@item.MenuItemId" method="post" class="ms-3">
                         <input type="hidden" name="idMesa" value="@mesa" />
                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar">
                             🗑️
