@@ -9,6 +9,7 @@
     var pedido = 0;
     var mesero = "Mesero";
     var total = 0m;
+    var totalCuenta = 0m;
     var puedeFinalizar = Model.All(p =>
                    p.IdEstadopedido == 4 || p.IdEstadopedido == 5);
 
@@ -19,6 +20,8 @@
         pedido = Model.FirstOrDefault()?.IdPedido ?? 0;
         mesero = Model.FirstOrDefault()?.IdPedidoNavigation?.IdMeseroNavigation?.Nombre ?? "Mesero";
         total = Model.Sum(d => d.DetPrecio ?? 0);
+        totalCuenta = Model.Sum(d => d.DetSubtotal ?? 0);
+
     }
 }
 
@@ -208,10 +211,10 @@
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h5 class="mb-3 text-secondary">📋 Resumen del Pedido</h5>
-                    <p><strong>Subtotal:</strong> $@total.ToString("0.00")</p>
+                    <p><strong>Subtotal:</strong> $@totalCuenta.ToString("0.00")</p>
                     <p><strong>Descuento:</strong> $0.00</p>
                     <hr />
-                    <p class="fw-bold fs-5">Total: $@total.ToString("0.00")</p>
+                    <p class="fw-bold fs-5">Total: $@totalCuenta.ToString("0.00")</p>
                    
 
                     @if (!puedeFinalizar)
