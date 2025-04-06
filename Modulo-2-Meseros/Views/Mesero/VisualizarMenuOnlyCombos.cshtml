@@ -81,12 +81,18 @@
                                 <h3 class="combo-title">${combo.nombre}</h3>
                                 <p class="combo-price">$${parseFloat(combo.precio).toFixed(2)}</p>
                                 <p class="combo-description">${combo.descripcion}</p>
-                                <button class="btn-add" 
-                                        data-combo-id="${combo.comboId}" 
-                                        data-combo-nombre="${combo.nombre}" 
-                                        data-combo-precio="${combo.precio}">
-                                    Añadir
-                                </button>
+                       <form method="post" action="/Mesero/AgregarItemTemporal">
+                                     <input type="hidden" name="idMesa" value="@ViewBag.IdMesa" />
+                         <input type="hidden" name="item.IdMenu" value="${combo.comboId}" />
+                         <input type="hidden" name="item.Nombre" value="${combo.nombre}" />
+                        <input type="hidden" name="item.Cantidad" value="1" />
+                        <input type="hidden" name="item.Precio" value="${combo.precio}" />
+                        <input type="hidden" name="item.Comentarios" value="" />
+                         <input type="hidden" name="item.TipoItem" value="Combo" />
+                        <button type="submit" class="btn-add">Añadir</button>
+                         </form>
+                               
+                        
                             </div>
                         </div>
                     `;

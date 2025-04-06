@@ -49,8 +49,9 @@ namespace Modulo_2_Meseros.Controllers
         }
 
         //[Authorize(Roles = "Mesero")]
-        public async Task<IActionResult> VisualizarMenuOnlyPlatos()
+        public async Task<IActionResult> VisualizarMenuOnlyPlatos(int idMesa)
         {
+            ViewBag.IdMesa = idMesa;
             try
             {
                 // Consulta con join para obtener el nombre de la categoría
@@ -78,8 +79,9 @@ namespace Modulo_2_Meseros.Controllers
         }
 
         //[Authorize(Roles = "Mesero")]
-        public async Task<IActionResult> VisualizarMenuOnlyCombos()
+        public async Task<IActionResult> VisualizarMenuOnlyCombos(int idMesa)
         {
+            ViewBag.IdMesa = idMesa;
             var today = DateTime.Today;
 
             var combos = await (from c in _context.Combos
@@ -103,8 +105,9 @@ namespace Modulo_2_Meseros.Controllers
         }
 
         //[Authorize(Roles = "Mesero")]
-        public async Task<IActionResult> VisualizarMenuOnlyPromociones()
+        public async Task<IActionResult> VisualizarMenuOnlyPromociones(int idMesa)
         {
+            ViewBag.IdMesa = idMesa;
             try
             {
                 var currentDate = DateOnly.FromDateTime(DateTime.Now);

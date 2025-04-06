@@ -73,13 +73,13 @@
 
     <!-- Acciones inferiores -->
     <div class="mt-4 d-flex flex-wrap gap-2">
-        <a asp-action="VisualizarMenuOnlyPlatos" asp-controller="Mesero" asp-route-idMesa="@mesa" class="btn btn-outline-primary">
+        <a asp-action="VisualizarMenuOnlyPlatos" asp-controller="Mesero" asp-route-idMesa="@ViewBag.IdMesa" class="btn btn-outline-primary">
             🍽️ Añadir Plato
         </a>
-        <a asp-action="VisualizarMenuOnlyCombos" asp-controller="Mesero" asp-route-idMesa="@mesa" class="btn btn-outline-secondary">
+        <a asp-action="VisualizarMenuOnlyCombos" asp-controller="Mesero" asp-route-idMesa="@ViewBag.IdMesa" class="btn btn-outline-secondary">
             🧺 Añadir Combo
         </a>
-        <a asp-action="VisualizarMenuOnlyPromociones" asp-controller="Mesero" asp-route-idMesa="@mesa" class="btn btn-outline-info">
+        <a asp-action="VisualizarMenuOnlyPromociones" asp-controller="Mesero" asp-route-idMesa="@ViewBag.IdMesa" class="btn btn-outline-info">
             🔖 Añadir Promoción
         </a>
         <form asp-action="CancelarPreparacion" method="post" onsubmit="return confirm('¿Cancelar y vaciar el pedido temporal?')" class="d-inline">
