@@ -76,10 +76,34 @@
                                 </div>
 
                                 <div class="col-md-4 text-end">
-                                    <a asp-action="CambiarEstadoDetallePedido" asp-route-idDetallePedido="@plato.IdPedido" asp-route-IdEstadoDetallePedido="3" class="btn btn-outline-success btn-sm me-1">✔️</a>
+                                    <!-- ✔️ Cambiar a Entregado (estado 4) -->
+                                    @if (plato.IdEstadopedido == 3 )
+                                    {
+                                        <form asp-action="CambiarEstadoDetallePedido" method="post" class="d-inline">
+                                            <input type="hidden" name="idDetallePedido" value="@plato.IdPedido" />
+                                            <input type="hidden" name="idMenu" value="@plato.IdMenu" />
+                                            <input type="hidden" name="IdEstadoDetallePedido" value="4" />
+                                            <button type="submit" class="btn btn-outline-success btn-sm me-1" title="Marcar como Entregado">✔️</button>
+                                        </form>
+                                    }
+
+                                    <!-- ❌ Cancelar (estado 5), solo si está en estado 1 (Solicitado) -->
+                                    @if (plato.IdEstadopedido == 1)
+                                    {
+                                        <form asp-action="CambiarEstadoDetallePedido" method="post" class="d-inline">
+                                            <input type="hidden" name="idDetallePedido" value="@plato.IdPedido" />
+                                            <input type="hidden" name="idMenu" value="@plato.IdMenu" />
+                                            <input type="hidden" name="IdEstadoDetallePedido" value="5" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm me-1" title="Cancelar Pedido">❌</button>
+                                        </form>
+                                    }
+
+
+                                    @* ✏️ Botón editar y 🗑️ eliminar se mantienen *@
                                     <a asp-action="EditarDetalle" asp-route-id="@plato.IdPedido" class="btn btn-outline-primary btn-sm me-1">✏️</a>
                                     <a asp-action="EliminarDetalle" asp-route-id="@plato.IdPedido" class="btn btn-outline-danger btn-sm">🗑️</a>
                                 </div>
+
                             </div>
                         </div>
                     </div>

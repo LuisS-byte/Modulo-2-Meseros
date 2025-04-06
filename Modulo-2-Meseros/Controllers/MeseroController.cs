@@ -283,12 +283,13 @@ namespace Modulo_2_Meseros.Controllers
         }
 
         //[Authorize(Roles = "Mesero")]
+        [HttpGet]
         public async Task<IActionResult> VerDetallePedido(int idMesa, bool nuevoPedido)
         {
             if (nuevoPedido)
             {
                 
-            return View("DetallePedidoView",    null);
+            return View("DetallePedidoView", null);
             }
 
             var pedidoActivo = await _context.Pedidos
@@ -342,15 +343,29 @@ namespace Modulo_2_Meseros.Controllers
 
         //[Authorize(Roles = "Mesero")]   
         [HttpPost]
-        public async Task<IActionResult> CambiarEstadoDetallePedido(int idDetallePedido, int IdEstadoDetallePedido)
+        public async Task<IActionResult> CambiarEstadoDetallePedido(int idDetallePedido, int idMenu, int IdEstadoDetallePedido)
         {
-            var pedido = await _context.Pedidos.FirstOrDefaultAsync(x => x.IdPedido == idDetallePedido);
-            if (pedido == null) return NotFound();
+            var detalle = await _context.DetallePedidos
+                 .Include(dp => dp.IdPedidoNavigation)
+                 .FirstOrDefaultAsync(dp => dp.IdPedido == idDetallePedido && dp.IdMenu == idMenu);
 
-            pedido.IdEstadopedido = IdEstadoDetallePedido;
+
+
+            if (detalle == null)
+                return NotFound();
+
+            // Regla: no se puede cancelar si está en Proceso o Finalizado
+            if (IdEstadoDetallePedido == 5 &&
+                (detalle.IdEstadopedido == 2 || detalle.IdEstadopedido == 3))
+            {
+                TempData["Error"] = "No se puede cancelar un plato en proceso o finalizado.";
+                return RedirectToAction("VerDetallePedido", new { idMesa = detalle.IdPedidoNavigation.IdMesa});
+            }
+
+            detalle.IdEstadopedido = IdEstadoDetallePedido;
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("VerDetallePedido", new { idMesa = pedido.IdMesa });
+            return RedirectToAction("VerDetallePedido", new { idMesa = detalle.IdPedidoNavigation.IdMesa});
         }
 
         private const string SessionPedido = "PedidoTemporal";
@@ -388,6 +403,7 @@ namespace Modulo_2_Meseros.Controllers
             return RedirectToAction("VerDetallePedido", new { idMesa });
         }
 
+        //
         [HttpPost]
         public async Task<IActionResult> EnviarPedido(int idMesa)
         {
