@@ -413,14 +413,14 @@ namespace Modulo_2_Meseros.Controllers
                 TempData["Error"] = "No hay elementos para enviar.";
                 return RedirectToAction("PreDetallePedido", new { idMesa });
             }
-
+            Console.WriteLine(pedidoTemporal);
             // Crear el Pedido
             var pedido = new Pedido
             {
                 IdMesa = idMesa,
                 IdEstadopedido = 2, // En Proceso
-                IdMesero = HttpContext.Session.GetInt32("IdMesero") ?? 0, // Tu lógica aquí
-                                                      // FechaPedido = DateTime.Now, si tienes el campo
+                IdMesero = HttpContext.Session.GetInt32("IdMesero") ?? 1, // Tu lógica aquí
+                                                      
             };
 
             _context.Pedidos.Add(pedido);
@@ -429,16 +429,17 @@ namespace Modulo_2_Meseros.Controllers
             // Insertar los detalles
             foreach (var item in pedidoTemporal)
             {
-                _context.DetallePedidos.Add(new DetallePedido
+                var detalle = new DetallePedido
                 {
                     IdPedido = pedido.IdPedido,
                     IdMenu = item.IdMenu,
                     DetCantidad = item.Cantidad,
                     DetPrecio = item.Precio,
-                    DetSubtotal = item.Subtotal,
+                    DetSubtotal = item.Cantidad * item.Precio, // Puedes calcularlo aquí o usar item.Subtotal
                     DetComentarios = item.Comentarios,
-                    IdEstadopedido = 1 // Solicitado
-                });
+                    IdEstadopedido = item.IdEstadoPedido
+                };
+                _context.DetallePedidos.Add(detalle);
             }
 
             await _context.SaveChangesAsync();
