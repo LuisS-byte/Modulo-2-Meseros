@@ -83,16 +83,18 @@
                                 <p class="plato-price">$${parseFloat(plato.precio).toFixed(2)}</p>
                                 <p class="plato-description">${plato.descripcion}</p>
 
-                         <form method="post" action="/Mesero/AgregarItemTemporal">
-                                     <input type="hidden" name="idMesa" value="@ViewBag.IdMesa" />
-                         <input type="hidden" name="item.IdMenu" value="${plato.platoId}" />
-                         <input type="hidden" name="item.Nombre" value="${plato.nombre}" />
-                        <input type="hidden" name="item.Cantidad" value="1" />
-                        <input type="hidden" name="item.Precio" value="${plato.precio}" />
-                        <input type="hidden" name="item.Comentarios" value="" />
-                         <input type="hidden" name="item.TipoItem" value="Plato" />
-                        <button type="submit" class="btn-add">Añadir</button>
-                         </form>
+                                 <form method="post" action="/Mesero/AgregarItemTemporal">
+            <input type="hidden" name="idMesa" value="@ViewBag.IdMesa" />
+            <input type="hidden" name="esNuevo" value="@ViewBag.esNuevo" />
+            <input type="hidden" name="item.PlatoId" value="${plato.platoId}" />
+            <input type="hidden" name="item.Nombre" value="${plato.nombre}" />
+            <input type="hidden" name="item.Cantidad" value="1" />
+            <input type="hidden" name="item.Precio" value="${plato.precio}" />
+            <input type="hidden" name="item.Comentarios" value="" />
+            <input type="hidden" name="item.TipoItem" value="Plato" />
+            <button type="submit" class="btn-add">Añadir</button>
+        </form>
+
 
                             </div>
                         </div>
