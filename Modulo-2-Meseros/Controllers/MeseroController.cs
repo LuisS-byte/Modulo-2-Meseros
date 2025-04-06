@@ -190,84 +190,90 @@ namespace Modulo_2_Meseros.Controllers
 
         // [Authorize(Roles = "Mesero")]
         [HttpPost]
-        public async Task<IActionResult> AgregarPedido([FromForm] PedidoCreacion request)
+        public async Task<IActionResult> AgregarPedido([FromForm] PedidoDTO request)
         {
-
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var mesa = await _context.Mesas.FindAsync(request.Pedido.IdMesa.Value);
+                // 1. Buscar mesa
+                var mesa = await _context.Mesas.FindAsync(request.IdMesa.Value);
                 if (mesa == null) return NotFound("Mesa no encontrada.");
 
-                if (mesa.Estado == true)
+                if (mesa.Estado == false)
                     return BadRequest("La mesa ya está ocupada.");
 
-                mesa.Estado = true;
+                mesa.Estado = false;
 
+                // 2. Crear el pedido
                 var pedido = new Pedido
                 {
-                    IdMesa = request.Pedido.IdMesa.Value,
-                    IdMesero = request.Pedido.EmpleadoID.Value,
-                    IdEstadopedido = request.Pedido.IdEstadopedido.Value
+                    IdMesa = request.IdMesa.Value,
+                    ///IdMesero = request.EmpleadoID.Value,
+                    IdMesero = 1,
+                    IdEstadopedido = 2
                 };
 
                 _context.Pedidos.Add(pedido);
                 await _context.SaveChangesAsync();
 
-                var menuItem = await _context.MenuItems
-                    .FirstOrDefaultAsync(mi => mi.MenuItemId == request.DetallePedido.IdMenu);
-
-                if (menuItem == null)
+                // 3. Obtener items temporales desde la sesión
+                var itemsTemporales = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido);
+                if (itemsTemporales == null || !itemsTemporales.Any())
                 {
-                    await transaction.RollbackAsync();
-                    return BadRequest($"El MenuItemId {request.DetallePedido.IdMenu} no existe.");
+                    TempData["Error"] = "No hay productos en el pedido temporal.";
+                    return RedirectToAction("PreDetallePedido", new { idMesa = request.IdMesa });
                 }
 
                 decimal precio = 0;
-                if (menuItem.PlatoId.HasValue)
+                foreach (var item in itemsTemporales)
                 {
-                    precio = await _context.Platos
-                        .Where(p => p.PlatoId == menuItem.PlatoId.Value)
-                        .Select(p => p.Precio)
-                        .FirstOrDefaultAsync();
-                }
-                else if (menuItem.ComboId.HasValue)
-                {
-                    precio = await _context.Combos
-                        .Where(c => c.ComboId == menuItem.ComboId.Value)
-                        .Select(c => c.Precio)
-                        .FirstOrDefaultAsync();
+                    // 4. Obtener información completa del MenuItem
+                    var menuItem = await _context.MenuItems
+                        .FirstOrDefaultAsync(mi => mi.MenuItemId == item.MenuItemId);
+
+                    if (menuItem == null)
+                    {
+                        await transaction.RollbackAsync();
+                        return BadRequest($"El MenuItemId {item.MenuItemId} no existe.");
+                    }
+
+                    // 5. Determinar precio del item
+                    if (menuItem.PlatoId.HasValue)
+                    {
+                        precio = await _context.Platos
+                            .Where(p => p.PlatoId == menuItem.PlatoId.Value)
+                            .Select(p => p.Precio)
+                            .FirstOrDefaultAsync();
+                    }
+                    else if (menuItem.ComboId.HasValue)
+                    {
+                        precio = await _context.Combos
+                            .Where(c => c.ComboId == menuItem.ComboId.Value)
+                            .Select(c => c.Precio)
+                            .FirstOrDefaultAsync();
+                    }
+
+                    // 6. Crear detalle del pedido
+                    var detalle = new DetallePedido
+                    {
+                        IdPedido = pedido.IdPedido,
+                        IdMenu = item.MenuItemId,
+                        DetCantidad = item.Cantidad,
+                        DetPrecio = precio,
+                        DetSubtotal = item.Cantidad * precio,
+                        DetComentarios = item.Comentarios ?? string.Empty,
+                        IdEstadopedido = item.IdEstadoPedido
+                    };
+
+                    _context.DetallePedidos.Add(detalle);
                 }
 
-                var detalle = new DetallePedido
-                {
-                    IdPedido = pedido.IdPedido,
-                    IdMenu = request.DetallePedido.IdMenu,
-                    DetCantidad = request.DetallePedido.DetCantidad.Value,
-                    DetPrecio = precio,
-                    DetSubtotal = request.DetallePedido.DetCantidad.Value * precio,
-                    DetComentarios = request.DetallePedido.DetComentarios ?? string.Empty,
-                    IdEstadopedido = request.DetallePedido.IdEstadopedido.Value
-                };
-
-                _context.DetallePedidos.Add(detalle);
                 await _context.SaveChangesAsync();
-
                 await transaction.CommitAsync();
 
-                return Ok(new PedidoResponseDTO
-                {
-                    IdPedido = pedido.IdPedido,
-                    IdMesa = (int)pedido.IdMesa,
-                    IdMesero = (int)pedido.IdMesero,
-                    Detalle = new DetallePedidoResponseDTO
-                    {
-                        IdMenu = detalle.IdMenu,
-                        Cantidad = (int)detalle.DetCantidad,
-                        Precio = (decimal)detalle.DetPrecio,
-                        Comentarios = detalle.DetComentarios
-                    }
-                });
+                return RedirectToAction("EstadoMesas");
+
+
             }
             catch (Exception ex)
             {
@@ -284,6 +290,23 @@ namespace Modulo_2_Meseros.Controllers
                     stackTrace = ex.StackTrace
                 });
             }
+        }
+
+
+        // Método auxiliar para obtener precio
+        private async Task<decimal> ObtenerPrecioMenuItem(int menuItemId)
+        {
+            var menuItem = await _context.MenuItems
+                .Include(mi => mi.Platos)
+                .Include(mi => mi.Combo)
+                .Include(mi => mi.Promocion)
+                .FirstOrDefaultAsync(mi => mi.MenuItemId == menuItemId);
+
+            if (menuItem?.Platos != null) return menuItem.Platos.Precio;
+            if (menuItem?.Combo != null) return menuItem.Combo.Precio;
+            if (menuItem?.Promocion != null) return menuItem.Promocion.Descuento;
+
+            return 0;
         }
 
         //[Authorize(Roles = "Mesero")]
