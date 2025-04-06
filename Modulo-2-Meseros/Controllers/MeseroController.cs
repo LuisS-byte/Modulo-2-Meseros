@@ -326,23 +326,50 @@ namespace Modulo_2_Meseros.Controllers
 
         //[Authorize(Roles = "Mesero")]
         [HttpPost]
-        public async Task<IActionResult> AgregarDetallePedido(DetallePedidoDTO detallePedidoDTO)
+        public async Task<IActionResult> AgregarDetallePedido(int idMesa)
         {
-            var detallePedido = new DetallePedido
-            {
-                IdPedido = detallePedidoDTO.IdPedido,
-                IdMenu = detallePedidoDTO.IdMenu,
-                DetCantidad = detallePedidoDTO.DetCantidad,
-                DetPrecio = detallePedidoDTO.DetPrecio,
-                DetSubtotal = detallePedidoDTO.DetSubtotal,
-                DetComentarios = detallePedidoDTO.DetComentarios,
-                IdEstadopedido = detallePedidoDTO.IdEstadopedido
-            };
+            // Obtener el pedido activo para la mesa
+            var pedidoExistente = await _context.Pedidos
+                .FirstOrDefaultAsync(p => p.IdMesa == idMesa);
 
-            _context.DetallePedidos.Add(detallePedido);
+            if (pedidoExistente == null)
+            {
+                TempData["Error"] = "No se encontró un pedido activo para esta mesa.";
+                return RedirectToAction("PreDetallePedido", new { idMesa });
+            }
+
+            // Obtener los items temporales
+            var itemsTemporales = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido);
+            if (itemsTemporales == null || !itemsTemporales.Any())
+            {
+                TempData["Error"] = "No hay productos en el pedido temporal.";
+                return RedirectToAction("PreDetallePedido", new { idMesa });
+            }
+
+            foreach (var item in itemsTemporales)
+            {
+                var detalle = new DetallePedido
+                {
+                    IdPedido = pedidoExistente.IdPedido, // ✅ Esto es lo importante
+                    IdMenu = item.IdMenu,
+                    DetCantidad = item.Cantidad,
+                    DetComentarios = item.Comentarios ?? "", // Evita nulos
+                    DetPrecio = item.Subtotal // Asegúrate que cantidad no sea 0
+                };
+                detalle.IdEstadopedido = 1;
+                _context.DetallePedidos.Add(detalle);
+            }
+
+
             await _context.SaveChangesAsync();
-            return Ok(detallePedido);
+
+            // Limpiar sesión temporal
+            HttpContext.Session.Remove("PedidoTemporal_" + idMesa);
+
+            TempData["Success"] = "¡Pedido enviado a cocina exitosamente!";
+            return RedirectToAction("EstadoMesas");
         }
+
 
         //[Authorize(Roles = "Mesero")]   
         [HttpPost]

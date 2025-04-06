@@ -69,12 +69,17 @@
             </div>
         }
 
-        <form asp-action="EnviarPedido" method="post" class="mt-4">
+        <form asp-action="@(ViewBag.EsNuevo == true ? "AgregarPedido" : "AgregarDetallePedido")"
+              asp-controller="Mesero"
+              method="post"
+              class="mt-4">
             <input type="hidden" name="idMesa" value="@mesa" />
             <button type="submit" class="btn btn-danger w-100 fs-5">
                 🚀 Enviar a Cocina
             </button>
         </form>
+
+
     }
 
     <!-- Acciones inferiores -->
