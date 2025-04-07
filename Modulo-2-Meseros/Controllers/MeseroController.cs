@@ -15,7 +15,7 @@ namespace Modulo_2_Meseros.Controllers
     public class MeseroController : Controller
     {
         private readonly AppDbContext _context;
-
+        //Pruebad e comentia
         public MeseroController(AppDbContext context)
         {
             _context = context;
