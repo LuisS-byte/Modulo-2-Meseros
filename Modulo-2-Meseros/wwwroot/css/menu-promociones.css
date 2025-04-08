@@ -92,11 +92,18 @@ body {
     background-color: #e53e3e;
     padding: 20px;
     position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.promocion-header-content {
+    display: flex;
+    flex-direction: column;
 }
 
 .promocion-badge {
     position: absolute;
-    top: -10px;
+    top: 10px;
     right: 20px;
     background-color: #f6ad55;
     color: #1a202c;
@@ -104,6 +111,8 @@ body {
     padding: 5px 10px;
     border-radius: 20px;
     font-size: 0.8rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 2;
 }
 
 .promocion-title {
@@ -111,6 +120,7 @@ body {
     font-weight: bold;
     margin: 0;
     margin-bottom: 5px;
+    padding-right: 70px; /* Espacio para el badge */
 }
 
 .promocion-dates {
@@ -279,7 +289,10 @@ footer {
         position: relative;
         top: 0;
         right: 0;
+        left: 0;
         display: inline-block;
         margin-bottom: 10px;
+        align-self: flex-start;
+        margin-top: 5px;
     }
 }
