@@ -115,49 +115,74 @@ namespace Modulo_2_Meseros.Controllers
             {
                 var currentDate = DateOnly.FromDateTime(DateTime.Now);
 
-                var promociones = await (from p in _context.Promociones
-                                         join pi in _context.PromocionesItems on p.PromocionId equals pi.PromocionId
-                                         where p.FechaInicio <= currentDate
-                                            && p.FechaFin >= currentDate
-                                         select new
-                                         {
-                                             PromocionID = p.PromocionId,
-                                             Descripcion = p.Descripcion,
-                                             Descuento = p.Descuento,
-                                             FechaInicio = p.FechaInicio,
-                                             FechaFin = p.FechaFin,
-                                             Items = (pi.PlatoId != null) ?
-                                                 _context.Platos.Where(pl => pl.PlatoId == pi.PlatoId)
-                                                     .Select(pl => new
-                                                     {
-                                                         Tipo = "Plato",
-                                                         ID = pl.PlatoId,
-                                                         Nombre = pl.Nombre,
-                                                         PrecioOriginal = pl.Precio,
-                                                         PrecioConDescuento = pl.Precio * (1 - (p.Descuento / 100))
-                                                     }).FirstOrDefault() :
-                                                 _context.Combos.Where(co => co.ComboId == pi.ComboId)
-                                                     .Select(co => new
-                                                     {
-                                                         Tipo = "Combo",
-                                                         ID = co.ComboId,
-                                                         Nombre = co.Nombre,
-                                                         PrecioOriginal = co.Precio,
-                                                         PrecioConDescuento = co.Precio * (1 - (p.Descuento / 100))
-                                                     }).FirstOrDefault()
-                                         }).ToListAsync();
+                // Obtenemos las promociones activas - con filtro de fechas correcto
+                var promociones = await _context.Promociones
+                    .Where(p => p.FechaInicio <= currentDate && p.FechaFin >= currentDate)
+                    .ToListAsync();
 
-                // Group by promotion since one promotion can have multiple items
-                var result = promociones.GroupBy(p => p.PromocionID)
-                    .Select(g => new
+                var result = new List<object>();
+
+                // Para cada promoción, obtenemos sus items
+                foreach (var promocion in promociones)
+                {
+                    var items = new List<object>();
+
+                    // Obtener items de platos en promoción
+                    var platosEnPromocion = await _context.PromocionesItems
+                        .Where(pi => pi.PromocionId == promocion.PromocionId)
+                        .Join(_context.Platos,
+                              pi => pi.PlatoId,
+                              p => p.PlatoId,
+                              (pi, p) => new { PromocionItem = pi, Plato = p })
+                        .Where(x => x.Plato != null)
+                        .Select(x => new
+                        {
+                            Tipo = "Plato",
+                            ID = x.Plato.PlatoId,
+                            Nombre = x.Plato.Nombre,
+                            PrecioOriginal = x.Plato.Precio,
+                            PrecioConDescuento = x.Plato.Precio * (1 - (promocion.Descuento / 100m)),
+                            PromocionId = promocion.PromocionId
+                        })
+                        .ToListAsync();
+
+                    items.AddRange(platosEnPromocion);
+
+                    // Obtener items de combos en promoción
+                    var combosEnPromocion = await _context.PromocionesItems
+                        .Where(pi => pi.PromocionId == promocion.PromocionId)
+                        .Join(_context.Combos,
+                              pi => pi.ComboId,
+                              c => c.ComboId,
+                              (pi, c) => new { PromocionItem = pi, Combo = c })
+                        .Where(x => x.Combo != null)
+                        .Select(x => new
+                        {
+                            Tipo = "Combo",
+                            ID = x.Combo.ComboId,
+                            Nombre = x.Combo.Nombre,
+                            PrecioOriginal = x.Combo.Precio,
+                            PrecioConDescuento = x.Combo.Precio * (1 - (promocion.Descuento / 100m)),
+                            PromocionId = promocion.PromocionId
+                        })
+                        .ToListAsync();
+
+                    items.AddRange(combosEnPromocion);
+
+                    // Agregamos la promoción con sus items al resultado si tiene items
+                    if (items.Any())
                     {
-                        PromocionID = g.Key,
-                        Descripcion = g.First().Descripcion,
-                        Descuento = g.First().Descuento,
-                        FechaInicio = g.First().FechaInicio,
-                        FechaFin = g.First().FechaFin,
-                        Items = g.Select(i => i.Items).Where(i => i != null).ToList()
-                    }).ToList();
+                        result.Add(new
+                        {
+                            PromocionID = promocion.PromocionId,
+                            Descripcion = promocion.Descripcion,
+                            Descuento = promocion.Descuento,
+                            FechaInicio = promocion.FechaInicio,
+                            FechaFin = promocion.FechaFin,
+                            Items = items
+                        });
+                    }
+                }
 
                 // Para solicitudes AJAX devolvemos JSON
                 if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
@@ -175,7 +200,7 @@ namespace Modulo_2_Meseros.Controllers
                 // Para solicitudes AJAX devolvemos un error JSON
                 if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 {
-                    return StatusCode(500, new { error = ex.Message });
+                    return StatusCode(500, new { error = ex.Message, stackTrace = ex.StackTrace });
                 }
 
                 return View(new List<dynamic>());
@@ -315,8 +340,8 @@ namespace Modulo_2_Meseros.Controllers
         {
             if (nuevoPedido)
             {
-                
-            return View("DetallePedidoView", null);
+
+                return View("DetallePedidoView", null);
             }
 
             var pedidoActivo = await _context.Pedidos
@@ -324,11 +349,11 @@ namespace Modulo_2_Meseros.Controllers
             .OrderByDescending(p => p.IdPedido) // opcional, por si hubiera más de uno con estado activo
             .FirstOrDefaultAsync();
 
-           /* if (pedidoActivo == null)
-            {
-                TempData["Error"] = "Esta mesa no tiene un pedido activo.";
-                return RedirectToAction("EstadoMesas"); // O la vista donde el mesero decide qué hacer
-            }*/
+            /* if (pedidoActivo == null)
+             {
+                 TempData["Error"] = "Esta mesa no tiene un pedido activo.";
+                 return RedirectToAction("EstadoMesas"); // O la vista donde el mesero decide qué hacer
+             }*/
 
             // Traer detalles del pedido activo
             var detallePedido = await _context.DetallePedidos
@@ -469,13 +494,13 @@ namespace Modulo_2_Meseros.Controllers
                 (detalle.IdEstadopedido == 2 || detalle.IdEstadopedido == 3))
             {
                 TempData["Error"] = "No se puede cancelar un plato en proceso o finalizado.";
-                return RedirectToAction("VerDetallePedido", new { idMesa = detalle.IdPedidoNavigation.IdMesa});
+                return RedirectToAction("VerDetallePedido", new { idMesa = detalle.IdPedidoNavigation.IdMesa });
             }
 
             detalle.IdEstadopedido = IdEstadoDetallePedido;
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("VerDetallePedido", new { idMesa = detalle.IdPedidoNavigation.IdMesa});
+            return RedirectToAction("VerDetallePedido", new { idMesa = detalle.IdPedidoNavigation.IdMesa });
         }
 
         private const string SessionPedido = "PedidoTemporal";
@@ -485,13 +510,13 @@ namespace Modulo_2_Meseros.Controllers
         {
             var pedidoTemporal = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido) ?? new List<PedidoTemporalItem>();
             ViewBag.IdMesa = idMesa;
-            ViewBag.EsNuevo = esNuevo; 
+            ViewBag.EsNuevo = esNuevo;
             return View(pedidoTemporal);
         }
 
         // POST para agregar plato (similar para combos/promos)
         [HttpPost]
-        public IActionResult AgregarItemTemporal(int idMesa, bool? esNuevo , PedidoTemporalItem item)
+        public IActionResult AgregarItemTemporal(int idMesa, bool? esNuevo, PedidoTemporalItem item)
         {
             if (item.PlatoId != 0)
             {
@@ -546,7 +571,7 @@ namespace Modulo_2_Meseros.Controllers
                 IdMesa = idMesa,
                 IdEstadopedido = 2, // En Proceso
                 IdMesero = HttpContext.Session.GetInt32("IdMesero") ?? 1, // Tu lógica aquí
-                                                      
+
             };
 
             _context.Pedidos.Add(pedido);
@@ -652,7 +677,7 @@ namespace Modulo_2_Meseros.Controllers
             var detalle = await _context.DetallePedidos
              .Include(d => d.IdPedidoNavigation)
             .FirstOrDefaultAsync(d => d.IdPedido == dto.IdPedido && d.IdMenu == dto.IdMenu);
-    
+
 
             if (detalle == null)
                 return NotFound();
