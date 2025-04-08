@@ -49,7 +49,7 @@ namespace Modulo_2_Meseros.Controllers
         }
 
         //[Authorize(Roles = "Mesero")]
-        public async Task<IActionResult> VisualizarMenuOnlyPlatos(int idMesa, bool? esNuevo)
+        public async Task<IActionResult> VisualizarMenuOnlyPlatos(int? idMesa, bool? esNuevo)
         {
             ViewBag.IdMesa = idMesa;
             ViewBag.EsNuevo = esNuevo;
@@ -80,7 +80,7 @@ namespace Modulo_2_Meseros.Controllers
         }
 
         //[Authorize(Roles = "Mesero")]
-        public async Task<IActionResult> VisualizarMenuOnlyCombos(int idMesa, bool? esNuevo)
+        public async Task<IActionResult> VisualizarMenuOnlyCombos(int? idMesa, bool? esNuevo)
         {
             ViewBag.IdMesa = idMesa;
             ViewBag.EsNuevo = esNuevo;
@@ -107,7 +107,7 @@ namespace Modulo_2_Meseros.Controllers
         }
 
         //[Authorize(Roles = "Mesero")]
-        public async Task<IActionResult> VisualizarMenuOnlyPromociones(int idMesa, bool? esNuevo)
+        public async Task<IActionResult> VisualizarMenuOnlyPromociones(int? idMesa, bool? esNuevo)
         {
             ViewBag.IdMesa = idMesa;
             ViewBag.EsNuevo = esNuevo;

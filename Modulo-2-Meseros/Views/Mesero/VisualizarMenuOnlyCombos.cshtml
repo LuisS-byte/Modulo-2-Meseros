@@ -12,6 +12,23 @@
     <div class="menu-header">
         <h2 class="menu-title">MENÚ DE COMBOS</h2>
         @* <button class="filter-button">Categorías <i class="arrow-down"></i></button> *@
+        @if (ViewBag.IdMesa != null)
+        {
+            <a asp-action="VerDetallePedido"
+               asp-controller="Mesero"
+               asp-route-idMesa="@ViewBag.IdMesa"
+               class="btn btn-outline-light">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+        }
+        else
+        {
+            <a asp-action="EstadoMesas"
+               asp-controller="Mesero"
+               class="btn btn-outline-light">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+        }
     </div>
 
     @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
