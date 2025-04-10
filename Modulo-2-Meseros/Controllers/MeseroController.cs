@@ -553,50 +553,7 @@ namespace Modulo_2_Meseros.Controllers
         }
 
         
-        [HttpPost]
-        public async Task<IActionResult> EnviarPedido(int idMesa)
-        {
-            var pedidoTemporal = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido);
-            if (pedidoTemporal == null || !pedidoTemporal.Any())
-            {
-                TempData["Error"] = "No hay elementos para enviar.";
-                return RedirectToAction("PreDetallePedido", new { idMesa });
-            }
-            Console.WriteLine(pedidoTemporal);
-            // Crear el Pedido
-            var pedido = new Pedido
-            {
-                IdMesa = idMesa,
-                IdEstadopedido = 2, // En Proceso
-                IdMesero = HttpContext.Session.GetInt32("IdMesero") ?? 1, 
-
-            };
-
-            _context.Pedidos.Add(pedido);
-            await _context.SaveChangesAsync();
-
-            // Insertar los detalles
-            foreach (var item in pedidoTemporal)
-            {
-                var detalle = new DetallePedido
-                {
-                    IdPedido = pedido.IdPedido,
-                    IdMenu = item.MenuItemId,
-                    DetCantidad = item.Cantidad,
-                    DetPrecio = item.Precio,
-                    DetSubtotal = item.Cantidad * item.Precio, 
-                    DetComentarios = item.Comentarios,
-                    IdEstadopedido = item.IdEstadoPedido
-                };
-                _context.DetallePedidos.Add(detalle);
-            }
-
-            await _context.SaveChangesAsync();
-            HttpContext.Session.Remove(SessionPedido);
-
-            return RedirectToAction("VerDetallePedido", new { idMesa });
-        }
-
+        
 
         [HttpPost]
         public IActionResult CancelarPreparacion()
