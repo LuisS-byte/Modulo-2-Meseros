@@ -10,7 +10,7 @@
 
 <div class="container mt-4">
 
-    <!-- BREADCRUMB -->
+   
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
@@ -26,7 +26,7 @@
         </div>
     }
 
-    <!-- ALERTA DE TEMP DATA -->
+    
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -83,7 +83,7 @@
 
     }
 
-    <!-- Acciones inferiores -->
+    <!--Añadido de platos/combos o promociones(botones de accion) -->
     <div class="mt-4 d-flex flex-wrap gap-2">
         <a asp-action="VisualizarMenuOnlyPlatos"
            asp-controller="Mesero"

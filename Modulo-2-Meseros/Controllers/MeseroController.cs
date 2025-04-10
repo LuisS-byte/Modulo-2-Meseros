@@ -11,7 +11,7 @@ using Modulo_2_Meseros.Custom;
 
 namespace Modulo_2_Meseros.Controllers
 {
-    //[Authorize(Roles = "Mesero")]
+    
     public class MeseroController : Controller
     {
         private readonly AppDbContext _context;
@@ -21,21 +21,21 @@ namespace Modulo_2_Meseros.Controllers
             _context = context;
         }
 
-        //[Authorize(Roles = "Mesero")]
+      
         public async Task<IActionResult> Index()
         {
             var mesas = await _context.Mesas.ToListAsync();
             return View(mesas);
         }
 
-        //[Authorize(Roles = "Mesero")]
+        
         public async Task<IActionResult> EstadoMesas()
         {
             var mesas = await _context.Mesas.ToListAsync();
             return View(mesas);
         }
 
-        // [Authorize(Roles = "Mesero")]
+       
         [HttpPost]
         public async Task<IActionResult> CambiarEstadoMesa(int id)
         {
@@ -48,7 +48,7 @@ namespace Modulo_2_Meseros.Controllers
             return RedirectToAction("EstadoMesas");
         }
 
-        //[Authorize(Roles = "Mesero")]
+       
         public async Task<IActionResult> VisualizarMenuOnlyPlatos(int idMesa, bool? esNuevo)
         {
             ViewBag.IdMesa = idMesa;
@@ -79,7 +79,7 @@ namespace Modulo_2_Meseros.Controllers
             }
         }
 
-        //[Authorize(Roles = "Mesero")]
+        
         public async Task<IActionResult> VisualizarMenuOnlyCombos(int idMesa, bool? esNuevo)
         {
             ViewBag.IdMesa = idMesa;
@@ -106,7 +106,7 @@ namespace Modulo_2_Meseros.Controllers
             return View(combos);
         }
 
-        //[Authorize(Roles = "Mesero")]
+        
         public async Task<IActionResult> VisualizarMenuOnlyPromociones(int idMesa, bool? esNuevo)
         {
             ViewBag.IdMesa = idMesa;
@@ -207,13 +207,13 @@ namespace Modulo_2_Meseros.Controllers
             }
         }
 
-        //[Authorize(Roles = "Mesero")]
+        
         public IActionResult CrearPedido()
         {
             return View();
         }
 
-        // [Authorize(Roles = "Mesero")]
+        
         [HttpPost]
         public async Task<IActionResult> AgregarPedido([FromForm] PedidoDTO request)
         {
@@ -334,7 +334,7 @@ namespace Modulo_2_Meseros.Controllers
             return 0;
         }
 
-        //[Authorize(Roles = "Mesero")]
+        
         [HttpGet]
         public async Task<IActionResult> VerDetallePedido(int idMesa, bool nuevoPedido)
         {
@@ -345,14 +345,14 @@ namespace Modulo_2_Meseros.Controllers
             }
 
             var pedidoActivo = await _context.Pedidos
-            .Where(p => p.IdMesa == idMesa && (p.IdEstadopedido == 2)) // Ajustá los IDs de estados según tu DB
-            .OrderByDescending(p => p.IdPedido) // opcional, por si hubiera más de uno con estado activo
+            .Where(p => p.IdMesa == idMesa && (p.IdEstadopedido == 2)) 
+            .OrderByDescending(p => p.IdPedido) 
             .FirstOrDefaultAsync();
 
             /* if (pedidoActivo == null)
              {
                  TempData["Error"] = "Esta mesa no tiene un pedido activo.";
-                 return RedirectToAction("EstadoMesas"); // O la vista donde el mesero decide qué hacer
+                 return RedirectToAction("EstadoMesas"); 
              }*/
 
             // Traer detalles del pedido activo
@@ -373,7 +373,7 @@ namespace Modulo_2_Meseros.Controllers
         }
 
 
-        //[Authorize(Roles = "Mesero")]
+        
         [HttpPost]
         public async Task<IActionResult> AgregarDetallePedido(int idMesa)
         {
@@ -476,7 +476,7 @@ namespace Modulo_2_Meseros.Controllers
         }
 
 
-        //[Authorize(Roles = "Mesero")]   
+     
         [HttpPost]
         public async Task<IActionResult> CambiarEstadoDetallePedido(int idDetallePedido, int idMenu, int IdEstadoDetallePedido)
         {
@@ -505,7 +505,7 @@ namespace Modulo_2_Meseros.Controllers
 
         private const string SessionPedido = "PedidoTemporal";
 
-        // GET
+        
         public IActionResult PreDetallePedido(int idMesa, bool? esNuevo)
         {
             var pedidoTemporal = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido) ?? new List<PedidoTemporalItem>();
@@ -518,7 +518,7 @@ namespace Modulo_2_Meseros.Controllers
         [HttpPost]
         public IActionResult AgregarItemTemporal(int idMesa, bool? esNuevo, PedidoTemporalItem item)
         {
-            if (item.Precio >= 10) // puedes ajustar este umbral si es necesario
+            if (item.Precio >= 10) 
             {
                 item.Precio /= 100m; // 'm' indica que es decimal
             }
@@ -552,22 +552,7 @@ namespace Modulo_2_Meseros.Controllers
             return RedirectToAction("PreDetallePedido", new { idMesa, esNuevo });
         }
 
-        // POST final: crear pedido y detallePedido real
-        [HttpPost]
-        public async Task<IActionResult> EnviarPedidoTemporal(int idMesa)
-        {
-            var pedidoTemporal = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido);
-            if (pedidoTemporal == null || !pedidoTemporal.Any())
-                return RedirectToAction("PreDetallePedido", new { idMesa });
-
-            // Crear pedido, luego detallePedido en la DB...
-            // (Podemos ayudarte a armarlo según tu estructura actual)
-
-            HttpContext.Session.Remove(SessionPedido); // Limpiar carrito
-            return RedirectToAction("VerDetallePedido", new { idMesa });
-        }
-
-        //
+        
         [HttpPost]
         public async Task<IActionResult> EnviarPedido(int idMesa)
         {
@@ -583,7 +568,7 @@ namespace Modulo_2_Meseros.Controllers
             {
                 IdMesa = idMesa,
                 IdEstadopedido = 2, // En Proceso
-                IdMesero = HttpContext.Session.GetInt32("IdMesero") ?? 1, // Tu lógica aquí
+                IdMesero = HttpContext.Session.GetInt32("IdMesero") ?? 1, 
 
             };
 
@@ -599,7 +584,7 @@ namespace Modulo_2_Meseros.Controllers
                     IdMenu = item.MenuItemId,
                     DetCantidad = item.Cantidad,
                     DetPrecio = item.Precio,
-                    DetSubtotal = item.Cantidad * item.Precio, // Puedes calcularlo aquí o usar item.Subtotal
+                    DetSubtotal = item.Cantidad * item.Precio, 
                     DetComentarios = item.Comentarios,
                     IdEstadopedido = item.IdEstadoPedido
                 };
@@ -619,7 +604,7 @@ namespace Modulo_2_Meseros.Controllers
             HttpContext.Session.Remove("PedidoTemporal");
             return RedirectToAction("EstadoMesas");
         }
-        // Paso 1: Agregar un nuevo método en el controlador MeseroController
+       
 
         [HttpPost]
         public IActionResult EliminarItemTemporal(int idMenu)
@@ -636,14 +621,14 @@ namespace Modulo_2_Meseros.Controllers
                 }
             }
 
-            int idMesa = ViewBag.IdMesa ?? 0; // Alternativamente podrías pasarlo como parámetro si lo tienes en el form
+            int idMesa = ViewBag.IdMesa ?? 0; 
             return RedirectToAction("PreDetallePedido", new { idMesa });
         }
 
         [HttpPost]
         public async Task<IActionResult> FinalizarOrden(int idMesa)
         {
-            // Buscar el pedido en estado "En Proceso" (ID = 2)
+            // Buscar el pedido en estado "En Proceso" (IDEstadopedio = 2)
             var pedido = await _context.Pedidos
                 .Where(p => p.IdMesa == idMesa && p.IdEstadopedido == 2)
                 .OrderByDescending(p => p.IdPedido)
@@ -666,7 +651,7 @@ namespace Modulo_2_Meseros.Controllers
 
             if (!puedeFinalizar)
             {
-                TempData["Error"] = "La orden no puede ser finalizada. Hay ítems aún pendientes.";
+                TempData["Error"] = "La orden no puede ser finalizada. Hay platos aún pendientes.";
                 return RedirectToAction("VerDetallePedido", new { idMesa });
             }
 

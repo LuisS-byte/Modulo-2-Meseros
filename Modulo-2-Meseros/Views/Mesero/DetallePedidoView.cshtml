@@ -78,7 +78,7 @@
                                         plato.IdEstadopedidoNavigation?.EstadoNombre == "Finalizado" ? "bg-secondary" :
                                         plato.IdEstadopedidoNavigation?.EstadoNombre == "Cancelado" ? "bg-danger text-white" :
                                         "bg-dark")">
-                                        @* Puedes incluir íconos para mejor visualización *@
+                                       
                                         @(plato.IdEstadopedidoNavigation?.EstadoNombre == "Solicitado" ? "🕓 " :
                                             plato.IdEstadopedidoNavigation?.EstadoNombre == "En Proceso" ? "⏳ " :
                                             plato.IdEstadopedidoNavigation?.EstadoNombre == "Entregado" ? "✅ " :
@@ -98,7 +98,7 @@
                                 </div>
 
                                 <div class="col-md-4 text-end">
-                                    <!-- ✔️ Cambiar a Entregado (estado 4) -->
+                                    <!--Cambiar a Entregado (estado 4) -->
                                     @if (plato.IdEstadopedido == 3)
                                     {
                                         <form asp-action="CambiarEstadoDetallePedido" method="post" class="d-inline">
@@ -109,7 +109,7 @@
                                         </form>
                                     }
 
-                                    <!-- ❌ Cancelar (estado 5), solo si está en estado 1 (Solicitado) -->
+                                    <!--Cancelar (estado 5), solo si está en estado 1 (Solicitado) -->
                                     @if (plato.IdEstadopedido == 1)
                                     {
                                         <form asp-action="CambiarEstadoDetallePedido" method="post" class="d-inline"
@@ -190,7 +190,7 @@
             }
 
 
-            <!-- Botones para añadir diferentes tipos de items -->
+            <!-- Botones para añadir diferentes tipos de Platos/combos/promociones -->
             <div class="d-flex flex-wrap gap-2 mt-3">
                 <a asp-action="VisualizarMenuOnlyPlatos" asp-controller="Mesero" asp-route-idMesa="@mesa" class="btn btn-outline-primary">
                     <i class="fas fa-utensils"></i> Añadir Plato
@@ -227,7 +227,7 @@
                         </div>
                     }
 
-                <!-- Botones de acción -->
+                <!-- Botones -->
                     <form asp-action="FinalizarOrden" method="post">
                         <input type="hidden" name="idMesa" value="@mesa" />
                         <button type="submit"
@@ -245,7 +245,7 @@
 
     @section Scripts {
         <script>
-            // Espera 4 segundos y luego oculta la alerta (si está)
+            // Espera y luego oculta la alerta solo si esta.
             setTimeout(function () {
                 var alerta = document.querySelector(".alert-dismissible");
                 if (alerta) {
