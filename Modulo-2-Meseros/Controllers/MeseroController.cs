@@ -450,7 +450,7 @@ namespace Modulo_2_Meseros.Controllers
                             IdPedido = pedidoExistente.IdPedido,
                             IdMenu = item.MenuItemId,
                             DetCantidad = item.Cantidad,
-                            DetPrecio = precio,
+                            DetPrecio = item.Precio,
                             DetSubtotal = item.Cantidad * precio,
                             DetComentarios = item.Comentarios ?? string.Empty,
                             IdEstadopedido = 1
@@ -518,6 +518,10 @@ namespace Modulo_2_Meseros.Controllers
         [HttpPost]
         public IActionResult AgregarItemTemporal(int idMesa, bool? esNuevo, PedidoTemporalItem item)
         {
+            if (item.Precio >= 10) // puedes ajustar este umbral si es necesario
+            {
+                item.Precio /= 100m; // 'm' indica que es decimal
+            }
             if (item.PlatoId != 0)
             {
                 var menuitens = _context.MenuItems.Where(x => x.PlatoId == item.PlatoId).ToList();
@@ -530,8 +534,17 @@ namespace Modulo_2_Meseros.Controllers
             }
             if (item.PromocionId != 0)
             {
-                var menuitens = _context.MenuItems.Where(x => x.PromocionId == item.PromocionId).ToList();
-                item.MenuItemId = menuitens.FirstOrDefault().MenuItemId;
+                if (item.TipoItem == "Plato")
+                {
+                    var menuitens = _context.MenuItems.Where(x => x.PlatoId == item.PromocionId).ToList();
+                    item.MenuItemId = menuitens.FirstOrDefault().MenuItemId;
+                }
+                else if (item.TipoItem == "Combo")
+                {
+                    var menuitens = _context.MenuItems.Where(x => x.ComboId == item.PromocionId).ToList();
+                    item.MenuItemId = menuitens.FirstOrDefault().MenuItemId;
+                }
+
             }
             var pedidoTemporal = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido) ?? new List<PedidoTemporalItem>();
             pedidoTemporal.Add(item);

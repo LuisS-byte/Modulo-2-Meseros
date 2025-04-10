@@ -95,9 +95,9 @@
                     
                     // Recorrer los items de la promoción
                     promocion.items.forEach(function(item) {
+                        console.log("Item actual:", item);
                         var precioOriginal = parseFloat(item.precioOriginal).toFixed(2);
                         var precioDescuento = parseFloat(item.precioConDescuento).toFixed(2);
-                        
                         promocionesHTML += `
                             <div class="item-card">
                                 <div class="item-info">
@@ -111,7 +111,8 @@
                               <form method="post" action="/Mesero/AgregarItemTemporal">
                             <input type="hidden" name="idMesa" value="@ViewBag.IdMesa" />
                                      <input type="hidden" name="esNuevo" value="@ViewBag.esNuevo" />
-                             <input type="hidden" name="item.PromocionId" value="${item.PromocionId}" />
+                             <input type="hidden" name="item.promocionId" value="${item.id}" />
+                             <input type="hidden" name="item.TipoItem" value="${item.tipo}" />
                              <input type="hidden" name="item.Nombre" value="${item.nombre}" />
                              <input type="hidden" name="item.Cantidad" value="1" />
                                 <input type="hidden" name="item.Precio" value="${precioDescuento}" />
