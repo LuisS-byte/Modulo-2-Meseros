@@ -31,7 +31,6 @@ namespace Modulo_2_Meseros.Custom
 
         public string GenerarToken(Empleado usuario)
         {
-            //mandar si o si idro o rol
             var userClaims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, usuario.EmpleadoId.ToString()),
@@ -39,22 +38,18 @@ namespace Modulo_2_Meseros.Custom
                 new Claim(ClaimTypes.Role, usuario.Rol.Nombre)
             };
 
-            // Obtener la clave secreta desde la configuración
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
 
-            // Especificar las credenciales de firma
             var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256Signature);
 
-            // Configuración de los detalles del token, incluyendo Issuer y Audience
             var jwtConfig = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],  // Definido en appsettings.json
-                audience: _configuration["Jwt:Audience"],  // Definido en appsettings.json
+                issuer: _configuration["Jwt:Issuer"],  
+                audience: _configuration["Jwt:Audience"], 
                 claims: userClaims,
                 expires: DateTime.UtcNow.AddMinutes(30),
                 signingCredentials: credentials
             );
 
-            // Retornar el token como un string
             return new JwtSecurityTokenHandler().WriteToken(jwtConfig);
         }
     }

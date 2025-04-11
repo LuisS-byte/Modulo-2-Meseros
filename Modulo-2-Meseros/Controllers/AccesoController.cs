@@ -48,7 +48,6 @@ namespace Modulo_2_Meseros.Controllers
 
             var token = _utilidades.GenerarToken(usuario);
 
-            // Pasar el token como parámetro de consulta
             return RedirectToAction("Index", "Acceso", new { token });
         }
 

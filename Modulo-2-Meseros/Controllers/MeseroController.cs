@@ -49,7 +49,6 @@ namespace Modulo_2_Meseros.Controllers
             ViewBag.EsNuevo = esNuevo;
             try
             {
-                // Consulta con join para obtener el nombre de la categoría
                 var platos = await _context.Platos
                     .Include(p => p.Categoria)
                     .Select(p => new
@@ -67,7 +66,6 @@ namespace Modulo_2_Meseros.Controllers
             }
             catch (Exception ex)
             {
-                // Manejo de errores
                 ViewBag.ErrorMessage = ex.Message;
                 return View(new List<dynamic>());
             }
@@ -109,19 +107,16 @@ namespace Modulo_2_Meseros.Controllers
             {
                 var currentDate = DateOnly.FromDateTime(DateTime.Now);
 
-                // Obtenemos las promociones activas - con filtro de fechas correcto
                 var promociones = await _context.Promociones
                     .Where(p => p.FechaInicio <= currentDate && p.FechaFin >= currentDate)
                     .ToListAsync();
 
                 var result = new List<object>();
 
-                // Para cada promoción, obtenemos sus items
                 foreach (var promocion in promociones)
                 {
                     var items = new List<object>();
 
-                    // Obtener items de platos en promoción
                     var platosEnPromocion = await _context.PromocionesItems
                         .Where(pi => pi.PromocionId == promocion.PromocionId)
                         .Join(_context.Platos,
@@ -142,7 +137,6 @@ namespace Modulo_2_Meseros.Controllers
 
                     items.AddRange(platosEnPromocion);
 
-                    // Obtener items de combos en promoción
                     var combosEnPromocion = await _context.PromocionesItems
                         .Where(pi => pi.PromocionId == promocion.PromocionId)
                         .Join(_context.Combos,
@@ -163,7 +157,6 @@ namespace Modulo_2_Meseros.Controllers
 
                     items.AddRange(combosEnPromocion);
 
-                    // Agregamos la promoción con sus items al resultado si tiene items
                     if (items.Any())
                     {
                         result.Add(new
@@ -178,20 +171,17 @@ namespace Modulo_2_Meseros.Controllers
                     }
                 }
 
-                // Para solicitudes AJAX devolvemos JSON
                 if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 {
                     return Json(result);
                 }
 
-                // Para solicitudes normales devolvemos la vista
                 return View();
             }
             catch (Exception ex)
             {
                 ViewBag.ErrorMessage = ex.Message;
 
-                // Para solicitudes AJAX devolvemos un error JSON
                 if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 {
                     return StatusCode(500, new { error = ex.Message, stackTrace = ex.StackTrace });
@@ -214,7 +204,6 @@ namespace Modulo_2_Meseros.Controllers
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 1. Buscar mesa
                 var mesa = await _context.Mesas.FindAsync(request.IdMesa.Value);
                 if (mesa == null) return NotFound("Mesa no encontrada.");
 
@@ -223,11 +212,9 @@ namespace Modulo_2_Meseros.Controllers
 
                 mesa.Estado = false;
 
-                // 2. Crear el pedido
                 var pedido = new Pedido
                 {
                     IdMesa = request.IdMesa.Value,
-                    ///IdMesero = request.EmpleadoID.Value,
                     IdMesero = 1,
                     IdEstadopedido = 2
                 };
@@ -235,7 +222,6 @@ namespace Modulo_2_Meseros.Controllers
                 _context.Pedidos.Add(pedido);
                 await _context.SaveChangesAsync();
 
-                // 3. Obtener items temporales desde la sesión
                 var itemsTemporales = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido);
                 if (itemsTemporales == null || !itemsTemporales.Any())
                 {
@@ -246,7 +232,6 @@ namespace Modulo_2_Meseros.Controllers
                 decimal precio = 0;
                 foreach (var item in itemsTemporales)
                 {
-                    // 4. Obtener información completa del MenuItem
                     var menuItem = await _context.MenuItems
                         .FirstOrDefaultAsync(mi => mi.MenuItemId == item.MenuItemId);
 
@@ -256,7 +241,6 @@ namespace Modulo_2_Meseros.Controllers
                         return BadRequest($"El MenuItemId {item.MenuItemId} no existe.");
                     }
 
-                    // 5. Determinar precio del item
                     if (menuItem.PlatoId.HasValue)
                     {
                         precio = await _context.Platos
@@ -272,7 +256,6 @@ namespace Modulo_2_Meseros.Controllers
                             .FirstOrDefaultAsync();
                     }
 
-                    // 6. Crear detalle del pedido
                     var detalle = new DetallePedido
                     {
                         IdPedido = pedido.IdPedido,
@@ -312,7 +295,6 @@ namespace Modulo_2_Meseros.Controllers
         }
 
 
-        // Método auxiliar para obtener precio
         private async Task<decimal> ObtenerPrecioMenuItem(int menuItemId)
         {
             var menuItem = await _context.MenuItems
@@ -342,14 +324,6 @@ namespace Modulo_2_Meseros.Controllers
             .Where(p => p.IdMesa == idMesa && (p.IdEstadopedido == 2)) 
             .OrderByDescending(p => p.IdPedido) 
             .FirstOrDefaultAsync();
-
-            /* if (pedidoActivo == null)
-             {
-                 TempData["Error"] = "Esta mesa no tiene un pedido activo.";
-                 return RedirectToAction("EstadoMesas"); 
-             }*/
-
-            // Traer detalles del pedido activo
             var detallePedido = await _context.DetallePedidos
                 .Include(dp => dp.IdPedidoNavigation)
                     .ThenInclude(p => p.IdMeseroNavigation)
@@ -371,7 +345,6 @@ namespace Modulo_2_Meseros.Controllers
         [HttpPost]
         public async Task<IActionResult> AgregarDetallePedido(int idMesa)
         {
-            // 1. Buscar pedido existente
             var pedidoExistente = await _context.Pedidos
                 .FirstOrDefaultAsync(p => p.IdMesa == idMesa && p.IdEstadopedido == 2);
 
@@ -381,7 +354,6 @@ namespace Modulo_2_Meseros.Controllers
                 return RedirectToAction("PreDetallePedido", new { idMesa });
             }
 
-            // 2. Obtener items temporales
             var itemsTemporales = HttpContext.Session.GetObjectFromJson<List<PedidoTemporalItem>>(SessionPedido);
             if (itemsTemporales == null || !itemsTemporales.Any())
             {
@@ -394,7 +366,6 @@ namespace Modulo_2_Meseros.Controllers
             {
                 foreach (var item in itemsTemporales)
                 {
-                    // 3. Obtener información completa del MenuItem
                     var menuItem = await _context.MenuItems
                         .Include(mi => mi.Platos)
                         .Include(mi => mi.Combo)
@@ -403,7 +374,6 @@ namespace Modulo_2_Meseros.Controllers
 
                     if (menuItem == null) continue;
 
-                    // 4. Determinar precio según el tipo de ítem
                     decimal precio = 0;
                     if (menuItem.Platos != null)
                     {
@@ -418,7 +388,6 @@ namespace Modulo_2_Meseros.Controllers
                         precio = menuItem.Promocion.Descuento;
                     }
 
-                    // 5. Buscar detalle existente del MISMO MenuItemId
                     var detalleExistente = await _context.DetallePedidos
                         .FirstOrDefaultAsync(d =>
                             d.IdPedido == pedidoExistente.IdPedido &&
@@ -427,7 +396,6 @@ namespace Modulo_2_Meseros.Controllers
 
                     if (detalleExistente != null)
                     {
-                        // 6. Actualizar detalle existente
                         detalleExistente.DetCantidad += item.Cantidad;
                         detalleExistente.DetSubtotal = detalleExistente.DetCantidad * precio;
 
@@ -438,7 +406,6 @@ namespace Modulo_2_Meseros.Controllers
                     }
                     else
                     {
-                        // 7. Crear nuevo detalle
                         var nuevoDetalle = new DetallePedido
                         {
                             IdPedido = pedidoExistente.IdPedido,
@@ -456,7 +423,6 @@ namespace Modulo_2_Meseros.Controllers
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                // 8. Limpiar sesión temporal
                 HttpContext.Session.Remove(SessionPedido);
                 TempData["Success"] = "¡Ítems agregados al pedido exitosamente!";
                 return RedirectToAction("VerDetallePedido", new { idMesa });
@@ -483,7 +449,6 @@ namespace Modulo_2_Meseros.Controllers
             if (detalle == null)
                 return NotFound();
 
-            // Regla: no se puede cancelar si está en Proceso o Finalizado
             if (IdEstadoDetallePedido == 5 &&
                 (detalle.IdEstadopedido == 2 || detalle.IdEstadopedido == 3))
             {
@@ -508,13 +473,12 @@ namespace Modulo_2_Meseros.Controllers
             return View(pedidoTemporal);
         }
 
-        // POST para agregar plato (similar para combos/promos)
         [HttpPost]
         public IActionResult AgregarItemTemporal(int idMesa, bool? esNuevo, PedidoTemporalItem item)
         {
             if (item.Precio >= 10) 
             {
-                item.Precio /= 100m; // 'm' indica que es decimal
+                item.Precio /= 100m; 
             }
             if (item.PlatoId != 0)
             {
@@ -579,7 +543,6 @@ namespace Modulo_2_Meseros.Controllers
         [HttpPost]
         public async Task<IActionResult> FinalizarOrden(int idMesa)
         {
-            // Buscar el pedido en estado "En Proceso" (IDEstadopedio = 2)
             var pedido = await _context.Pedidos
                 .Where(p => p.IdMesa == idMesa && p.IdEstadopedido == 2)
                 .OrderByDescending(p => p.IdPedido)
@@ -591,12 +554,10 @@ namespace Modulo_2_Meseros.Controllers
                 return RedirectToAction("EstadoMesas");
             }
 
-            // Obtener los detalles del pedido
             var detalles = await _context.DetallePedidos
                 .Where(dp => dp.IdPedido == pedido.IdPedido)
                 .ToListAsync();
 
-            // Verificar que todos los ítems estén en Entregado (4) o Cancelado (5)
             bool puedeFinalizar = detalles.All(dp =>
                 dp.IdEstadopedido == 4 || dp.IdEstadopedido == 5);
 
@@ -606,10 +567,8 @@ namespace Modulo_2_Meseros.Controllers
                 return RedirectToAction("VerDetallePedido", new { idMesa });
             }
 
-            // Cambiar estado del pedido a "Finalizado" (ID = 3)
             pedido.IdEstadopedido = 3;
 
-            // Liberar mesa
             var mesa = await _context.Mesas.FindAsync(idMesa);
             if (mesa != null)
                 mesa.Estado = true;
