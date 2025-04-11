@@ -22,12 +22,6 @@ namespace Modulo_2_Meseros.Controllers
         }
 
       
-        public async Task<IActionResult> Index()
-        {
-            var mesas = await _context.Mesas.ToListAsync();
-            return View(mesas);
-        }
-
         
         public async Task<IActionResult> EstadoMesas()
         {
