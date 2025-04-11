@@ -23,11 +23,6 @@ namespace Modulo_2_Meseros.Controllers
 
       
         
-        public async Task<IActionResult> EstadoMesas()
-        {
-            var mesas = await _context.Mesas.ToListAsync();
-            return View(mesas);
-        }
 
        
         [HttpPost]
@@ -98,7 +93,38 @@ namespace Modulo_2_Meseros.Controllers
             return View(combos);
         }
 
-        
+
+
+        [HttpGet]
+        public async Task<IActionResult> VerDetallePedido(int idMesa, bool nuevoPedido)
+        {
+            if (nuevoPedido)
+            {
+
+                return View("DetallePedidoView", null);
+            }
+
+            var pedidoActivo = await _context.Pedidos
+            .Where(p => p.IdMesa == idMesa && (p.IdEstadopedido == 2))
+            .OrderByDescending(p => p.IdPedido)
+            .FirstOrDefaultAsync();
+            var detallePedido = await _context.DetallePedidos
+                .Include(dp => dp.IdPedidoNavigation)
+                    .ThenInclude(p => p.IdMeseroNavigation)
+                .Include(dp => dp.IdEstadopedidoNavigation)
+                .Include(dp => dp.IdMenuNavigation)
+                    .ThenInclude(mi => mi.Platos)
+                .Include(dp => dp.IdMenuNavigation)
+                    .ThenInclude(mi => mi.Combo)
+                .Include(dp => dp.IdMenuNavigation)
+                    .ThenInclude(mi => mi.Promocion)
+                .Where(dp => dp.IdPedido == pedidoActivo.IdPedido)
+                .ToListAsync();
+
+            return View("DetallePedidoView", detallePedido);
+        }
+
+
         public async Task<IActionResult> VisualizarMenuOnlyPromociones(int idMesa, bool? esNuevo)
         {
             ViewBag.IdMesa = idMesa;
@@ -191,13 +217,27 @@ namespace Modulo_2_Meseros.Controllers
             }
         }
 
-        
-        public IActionResult CrearPedido()
+
+
+
+
+
+
+
+
+
+
+
+
+
+        public async Task<IActionResult> EstadoMesas()
         {
-            return View();
+            var mesas = await _context.Mesas.ToListAsync();
+            return View(mesas);
         }
 
-        
+
+
         [HttpPost]
         public async Task<IActionResult> AgregarPedido([FromForm] PedidoDTO request)
         {
@@ -310,35 +350,6 @@ namespace Modulo_2_Meseros.Controllers
             return 0;
         }
 
-        
-        [HttpGet]
-        public async Task<IActionResult> VerDetallePedido(int idMesa, bool nuevoPedido)
-        {
-            if (nuevoPedido)
-            {
-
-                return View("DetallePedidoView", null);
-            }
-
-            var pedidoActivo = await _context.Pedidos
-            .Where(p => p.IdMesa == idMesa && (p.IdEstadopedido == 2)) 
-            .OrderByDescending(p => p.IdPedido) 
-            .FirstOrDefaultAsync();
-            var detallePedido = await _context.DetallePedidos
-                .Include(dp => dp.IdPedidoNavigation)
-                    .ThenInclude(p => p.IdMeseroNavigation)
-                .Include(dp => dp.IdEstadopedidoNavigation)
-                .Include(dp => dp.IdMenuNavigation)
-                    .ThenInclude(mi => mi.Platos)
-                .Include(dp => dp.IdMenuNavigation)
-                    .ThenInclude(mi => mi.Combo)
-                .Include(dp => dp.IdMenuNavigation)
-                    .ThenInclude(mi => mi.Promocion)
-                .Where(dp => dp.IdPedido == pedidoActivo.IdPedido)
-                .ToListAsync();
-
-            return View("DetallePedidoView", detallePedido);
-        }
 
 
         
